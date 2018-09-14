@@ -1,0 +1,127 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html id="htmlId">
+<head>
+  <title>Coverage Report :: Radar</title>
+  <style type="text/css">
+    @import "../../.css/coverage.css";
+  </style>
+</head>
+
+<body>
+<div class="header"></div>
+
+<div class="content">
+<div class="breadCrumbs">
+    [ <a href="../../index.html">all classes</a> ]
+    [ <a href="../index.html">comp3506.assn1.application</a> ]
+</div>
+
+<h1>Coverage Summary for Class: Radar (comp3506.assn1.application)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">Radar</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/ 17)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<div class="sourceCode"><i>1</i>&nbsp;package comp3506.assn1.application;
+<i>2</i>&nbsp;
+<i>3</i>&nbsp;import java.util.concurrent.ThreadLocalRandom;
+<i>4</i>&nbsp;
+<i>5</i>&nbsp;
+<i>6</i>&nbsp;/**
+<i>7</i>&nbsp; * Very simplistic source that generates aircraft for the OneSky simulation.
+<i>8</i>&nbsp; * 
+<i>9</i>&nbsp; * @author Richard Thomas &lt;richard.thomas@uq.edu.au&gt;
+<i>10</i>&nbsp; *
+<i>11</i>&nbsp; */
+<i>12</i>&nbsp;public class Radar {
+<i>13</i>&nbsp;	
+<i>14</i>&nbsp;	private AirTrafficTracker tracker;
+<i>15</i>&nbsp;	
+<i>16</i>&nbsp;	// aircraftIdTag and id are used to generate unique identifiers for each aircraft.
+<i>17</i>&nbsp;	private String aircraftIdTag;
+<i>18</i>&nbsp;	private int id;
+<i>19</i>&nbsp;
+<b class="nc"><i>20</i>&nbsp;	public Radar(AirTrafficTracker tracker, String aircraftIdTag) {</b>
+<b class="nc"><i>21</i>&nbsp;		this.tracker = tracker;</b>
+<b class="nc"><i>22</i>&nbsp;		this.aircraftIdTag = aircraftIdTag;</b>
+<b class="nc"><i>23</i>&nbsp;		id = 10;</b>
+<b class="nc"><i>24</i>&nbsp;	}</b>
+<i>25</i>&nbsp;	
+<i>26</i>&nbsp;	/**
+<i>27</i>&nbsp;	 * For the purposes of the OneSky simulation, this generates a new aircraft object to add to the air space.
+<i>28</i>&nbsp;	 */
+<i>29</i>&nbsp;	public void aircraftIdentified() {
+<b class="nc"><i>30</i>&nbsp;		final int MIN_AIRSPEED = 220;		// metres per second</b>
+<b class="nc"><i>31</i>&nbsp;		final int MAX_AIRSPEED = 275;		// metres per second</b>
+<b class="nc"><i>32</i>&nbsp;		final double NORTH = 0;				// degrees</b>
+<b class="nc"><i>33</i>&nbsp;		final double HEADING_RANGE = 360;	// degrees</b>
+<b class="nc"><i>34</i>&nbsp;		final int METRES_PER_KILOMETRE = 1000;</b>
+<i>35</i>&nbsp;		
+<b class="nc"><i>36</i>&nbsp;		tracker.newAircraft(new Aircraft(aircraftIdTag+id++, </b>
+<b class="nc"><i>37</i>&nbsp;										 ThreadLocalRandom.current().nextInt(0, tracker.getLength()), </b>
+<b class="nc"><i>38</i>&nbsp;										 ThreadLocalRandom.current().nextInt(0, tracker.getBreadth()), </b>
+<b class="nc"><i>39</i>&nbsp;										 ThreadLocalRandom.current().nextInt(0, tracker.getHeight()*METRES_PER_KILOMETRE), </b>
+<b class="nc"><i>40</i>&nbsp;										 ThreadLocalRandom.current().nextInt(MIN_AIRSPEED, MAX_AIRSPEED), </b>
+<b class="nc"><i>41</i>&nbsp;										 ThreadLocalRandom.current().nextDouble(NORTH, HEADING_RANGE)));</b>
+<b class="nc"><i>42</i>&nbsp;	}</b>
+<i>43</i>&nbsp;
+<i>44</i>&nbsp;}
+</div>
+</div>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2018-08-23 21:21</div>
+</div>
+</body>
+</html>
