@@ -15,7 +15,7 @@ public class OccurenceTrieNode {
     private boolean isWord;
 
     private final static int INITIAL_OCCURENCES_SPACE = 2;
-	private ArrayList<EqualsPair<Integer, Integer>> occurences;
+	private ArrayList<Pair<Integer, Integer>> occurences;
 
     /**
      * Constructor for OccurenceTrieNode
@@ -58,10 +58,10 @@ public class OccurenceTrieNode {
      * Returns all occurences of the word terminated by this OccurenceTrieNode
      *
      * @return
-     *      A list of occurences of this word as EqualsPairs of line number and
+     *      A list of occurences of this word as Pairs of line number and
      *      initial column number
      */
-    public ArrayList<EqualsPair<Integer, Integer>> getOccurences() {
+    public ArrayList<Pair<Integer, Integer>> getOccurences() {
         return this.occurences;
     }
 
@@ -78,11 +78,13 @@ public class OccurenceTrieNode {
      * OccurenceTrieNode
      *
      * @param occurence
-     *      An occurence as a EqualsPair of line number, initial column number
+     *      An occurence as a Pair of line number, initial column number
      */
-	public void addOccurence(EqualsPair<Integer, Integer> occurence) {
-	    this.setIsWord(true);
-        this.occurences.append(occurence);
+	public void addOccurence(Pair<Integer, Integer> occurence) {
+	    if(occurence != null) {
+            this.setIsWord(true);
+            this.occurences.append(occurence);
+        }
     }
 
     /**

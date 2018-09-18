@@ -1,20 +1,20 @@
 package comp3506.assn2.utils;
 
-import java.lang.reflect.Array;
+import java.util.Arrays;
 
-public class ArrayList<V> {
+public class ArrayList <E> {
 
     private final static int DEFAULT_START_SIZE = 4;
     private final static int RESIZING_FACTOR = 2;
 
-    private V[] array;
+    private E[] array;
     private int numElements;
     private int size;
 
     public ArrayList(int initialSize) {
         this.numElements = 0;
         this.size = initialSize;
-        this.array = (V[])new Object[this.size];
+        this.array = (E[])new Object[this.size];
     }
 
     public ArrayList() {
@@ -23,12 +23,11 @@ public class ArrayList<V> {
 
     public int size() { return this.numElements;}
 
-    public V get(int i) {
+    public E get(int i) {
         return array[i];
     }
 
-    public void append(V element) {
-
+    public void append(E element) {
         //Allocate more memory if required
         if(this.numElements >= this.size) {
             increaseSize(RESIZING_FACTOR);
@@ -37,15 +36,13 @@ public class ArrayList<V> {
         this.array[this.numElements++] = element;
     }
 
-    public void extend(ArrayList<V> other) {
+    public void extend(ArrayList<E> other) {
         for(int i = 0; i < other.size(); i++) {
             this.append(other.get(i));
         }
-
-        this.numElements += other.size();
     }
 
-    public void add(int index, V element) {
+    public void add(int index, E element) {
         //Allocate more memory if required
         if(this.numElements >= this.size) {
             increaseSize(RESIZING_FACTOR);
@@ -61,16 +58,20 @@ public class ArrayList<V> {
         this.numElements++;
     }
 
-    public void remove(int index) {
+    public E remove(int index) {
+        E removedElement = this.array[index];
+
         //Shift elements in front of index back one
         for(int i = index; i < this.numElements; i++) {
             this.array[i] = this.array[i + 1];
         }
 
         this.numElements--;
+
+        return removedElement;
     }
 
-    public boolean remove(V value) {
+    public boolean remove(Object value) {
         for(int i = 0; i < this.array.length; i++) {
             if(this.array[i].equals(value)) {
                 this.remove(i);
@@ -81,20 +82,37 @@ public class ArrayList<V> {
         return false;
     }
 
-    public boolean contains(V element) {
+    public boolean contains(Object o) {
         for(int i = 0; i < this.numElements; i++) {
-            if(this.array[i].equals(element)) {
+            if(this.array[i].equals(o)) {
                 return true;
             }
         }
-
         return false;
+    }
+
+    public E[] toArray() {
+        return this.array;
     }
 
     private void increaseSize(int factor) {
         this.size *= factor;
-        V[] newArray = (V[])new Object[this.size];;
+        E[] newArray = (E[])new Object[this.size];;
         java.lang.System.arraycopy(this.array, 0, newArray, 0, this.numElements);
         this.array = newArray;
     }
+
+    public java.util.ArrayList<E> toJavaArrayList() {
+        java.util.ArrayList<E> javaArrayList = new java.util.ArrayList<>(this.numElements);
+        for(int i = 0; i < this.numElements; i++) {
+            javaArrayList.add(this.array[i]);
+        }
+
+        return javaArrayList;
+    }
+
+    public String toString() {
+        return Arrays.toString(this.array);
+    }
+
 }

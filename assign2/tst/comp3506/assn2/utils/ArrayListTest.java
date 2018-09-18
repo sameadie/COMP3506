@@ -88,7 +88,7 @@ class ArrayListTest {
                     comparisonArrayList.remove(testObjects[i]));
 
             Assert.assertTrue(compareArrayLists(testArrayList, comparisonArrayList));
-            System.out.println(testArrayList.toString())
+            System.out.println(testArrayList.toString());
         }
     }
 
@@ -138,6 +138,9 @@ class ArrayListTest {
         extendComparisonArrayList.forEach(object -> {
             comparisonArrayList.add(object);
         });
+
+        System.err.println(testArrayList.toJavaArrayList().toString());
+        System.err.println(comparisonArrayList.toString());
 
         for(int i = 0; i < testArrayList.size(); i++) {
             Assert.assertTrue(comparisonArrayList.contains(testArrayList.get(i)));
