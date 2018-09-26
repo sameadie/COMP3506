@@ -1,6 +1,8 @@
 package comp3506.assn2.utils;
 
 
+import java.io.BufferedReader;
+import java.io.IOException;
 
 /**
  * A trie structure for OccurenceTrieNodes 
@@ -10,6 +12,7 @@ package comp3506.assn2.utils;
  */
 public class OccurenceTrie {
 
+    private final static char APOSTROPHE_CHAR = '\'';
     private final static OccurenceTrieNode ROOT_NODE= new OccurenceTrieNode();
     protected final static int INITAL_CHILDREN_SPACES = 4;
 
@@ -34,6 +37,70 @@ public class OccurenceTrie {
      */
 	public OccurenceTrie() {
 	    this(INITAL_CHILDREN_SPACES);
+    }
+
+    /**
+     * Generates and returns a trie from a document
+     *
+     * @param documentReader
+     *      A Buffered Reader for the file to generate a trie from
+     * @return
+     *      An OccurenceTrie populated from the specified file
+     * @throws IOException
+     *      If the file cannot be opened or accessed
+     */
+    public static OccurenceTrie formTrieFromFile(BufferedReader documentReader) throws IOException {
+        int lineNumber = 1;
+        String line;
+        OccurenceTrie documentTrie = new OccurenceTrie();
+        OccurenceTrieNode reference;
+        Pair<Integer, Integer> occurence;
+
+        while((line = documentReader.readLine()) != null) {
+            line = line.toLowerCase();
+            reference = documentTrie.getRoot();
+            occurence = new Pair<>(lineNumber, 1);
+
+            for(int i = 0; i < line.length(); i++) {
+
+                //Ignore punctation that isn't apostrophes
+                if(!(Character.isLetterOrDigit(line.charAt(i)) || line.charAt(i) == APOSTROPHE_CHAR || line.charAt(i) == ' ')) {
+                    continue;
+
+                    //Handle space characters - end of words
+                } else if(line.charAt(i) == ' ') {
+                    if(!reference.equals(documentTrie.getRoot())) {
+                        reference.addOccurence(occurence);
+                    }
+
+                    //Column number = i + 1: next word starts at i + 2
+                    occurence = new Pair<>(lineNumber, i + 2);
+                    reference = documentTrie.getRoot();
+                    continue;
+
+                    //Handle apostrophe
+                } else if (line.charAt(i) == APOSTROPHE_CHAR) {
+                    //Ignore apostrophes on ends of word
+                    if (i + 1 == line.length() || (line.charAt(i + 1) == ' ')){
+                        continue;
+                    }
+
+                    //Move start of word up one if apostrophe at start of word
+                    if(i == 0 || (line.charAt(i - 1) == ' ')) {
+                        occurence.setRightValue(occurence.getRightValue() + 1);
+                    }
+                }
+
+                //Traverse general case
+                reference = reference.addChild(line.charAt(i));
+
+            }
+
+            //Handle end of line
+            reference.addOccurence(occurence);
+            lineNumber++;
+        }
+        return documentTrie;
     }
 
     /**
