@@ -27,6 +27,12 @@ public class ArrayList <E> {
         return array[i];
     }
 
+    public void set(int index, E element) {
+        if(index < this.array.length) {
+            this.array[index] = element;
+        }
+    }
+
     public void append(E element) {
         //Allocate more memory if required
         if(this.numElements >= this.size) {
