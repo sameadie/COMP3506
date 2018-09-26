@@ -17,7 +17,6 @@ import java.util.List;
  */
 public class AutoTester implements Search {
 
-    private final static char APOSTROPHE_CHAR = '\'';
     private OccurenceTrie documentTrie;
 
     /**
@@ -45,7 +44,7 @@ public class AutoTester implements Search {
             BufferedReader documentReader = new BufferedReader(new FileReader(documentFileName));
             //Remove byte order mark
             documentReader.read();
-            this.documentTrie = formTrieFromFile(documentReader);
+            this.documentTrie = OccurenceTrie.formTrieFromFile(documentReader);
         } catch (Exception e) {
             System.err.println("IOException ");
         }
@@ -54,59 +53,6 @@ public class AutoTester implements Search {
         //BufferedReader stopWordsReader = new BufferedReader(new FileReader(stopWordsFileName));
     }
 
-    //TODO: Delete this function
-    public void printTrieOccurences() {
-
-        documentTrie.getOccurencesForSubtree("").toJavaArrayList().forEach(occurence -> {
-            if(occurence == null) {
-                System.out.println("NULL");
-            } else {
-                System.out.println(String.format("(%d, %d)", occurence.getLeftValue(), occurence.getRightValue()));
-            }
-        });
-    }
-
-    public OccurenceTrie formTrieFromFile(BufferedReader documentReader) throws IOException {
-        int lineNumber = 1;
-        String line;
-        OccurenceTrie documentTrie = new OccurenceTrie();
-        OccurenceTrieNode reference;
-        Pair<Integer, Integer> occurence;
-
-        while((line = documentReader.readLine()) != null) {
-            line = line.toLowerCase();
-            //System.out.println(line);
-
-            reference = documentTrie.getRoot();
-            occurence = new Pair<>(lineNumber, 1);
-
-            for(int i = 0; i < line.length(); i++) {
-                //System.out.println(String.format("%d, %d", i, ((int)line.charAt(i))));
-                if(line.charAt(i) == ' ') {
-                    reference.addOccurence(occurence);
-                    //System.out.println(String.format("Adding (%d, %d) to %s", occurence.getLeftValue(), occurence.getRightValue(), reference.getValue()));
-
-                    //Column number = i + 1: next word starts at i + 2
-                    occurence = new Pair<>(lineNumber, i + 2);
-                    reference = documentTrie.getRoot();
-                    continue;
-                } else if (line.charAt(i) == APOSTROPHE_CHAR) {
-                    //Ignore apostrophes on ends of word
-                    if ((line.charAt(i + 1) == ' ') || (line.charAt(i - 1) == ' ')) {
-                        continue;
-                    }
-                }
-
-                //Traverse or add character to Trie
-                reference = reference.addChild(line.charAt(i));
-
-            }
-            reference.addOccurence(occurence);
-            //System.out.println(String.format("Adding (%d, %d) to %s", occurence.getLeftValue(), occurence.getRightValue(), reference.getValue()));
-            lineNumber++;
-        }
-        return documentTrie;
-    }
 
     /**
      * Determines the number of times the word appears in the document.
@@ -127,7 +73,6 @@ public class AutoTester implements Search {
         } else {
             return occurences.size();
         }
-
     }
 
     /**
