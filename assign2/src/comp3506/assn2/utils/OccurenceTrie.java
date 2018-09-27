@@ -159,7 +159,7 @@ public class OccurenceTrie {
         if(longestPrefix.getRightValue() == word.length()) {
             return longestPrefix.getLeftValue().getOccurences();
         }
-        return null;
+        return new ArrayList<Pair<Integer, Integer>>();
     }
 
     /**

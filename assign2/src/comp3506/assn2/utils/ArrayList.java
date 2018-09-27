@@ -68,7 +68,7 @@ public class ArrayList <E> {
         E removedElement = this.array[index];
 
         //Shift elements in front of index back one
-        for(int i = index; i < this.numElements; i++) {
+        for(int i = index; i < this.numElements - 1; i++) {
             this.array[i] = this.array[i + 1];
         }
 
