@@ -116,12 +116,17 @@ public class Intersection {
             int minimumValue = occurences.get(0).get(pointers.get(0)).getLeftValue();
 
             outerLoop:
-            for(int i = 0; i < pointers.size() - 1; i++) {
+            for(int i = 0; i < pointers.size(); i++) {
 
                 //If duplicate is found, move pointer along without adding to union
                 for(int j = i + 1; j < pointers.size(); j++) {
-                    if(occurences.get(i).get(pointers.get(i)).getLeftValue() == occurences.get(j).get(pointers.get(j)).getLeftValue()) {
+                    if(occurences.get(i).get(pointers.get(i)).getLeftValue().equals(occurences.get(j).get(pointers.get(j)).getLeftValue())) {
                         pointers.set(i, pointers.get(i) + 1);
+                        //Remove completed arrays
+                        if(pointers.get(i) + 1 >= occurences.get(i).size()) {
+                            pointers.remove(i);
+                            occurences.remove(i);
+                        }
                         i--;
                         continue outerLoop;
                     }
@@ -143,14 +148,16 @@ public class Intersection {
                 pointers.remove(minimumIndex);
                 occurences.remove(minimumIndex);
             }
-        } while(!allPointersFinished(occurences, pointers));
+        } while(occurences.size() != 0); //!allPointersFinished(occurences, pointers));
 
         //Add additional elements
-        for(int i = 0; i < occurences.size(); i++) {
-            unions.append(occurences.get(i).get(occurences.get(i).size() - 1).getLeftValue());
-        }
+        //for(int i = 0; i < occurences.size(); i++) {
+        //    unions.append(occurences.get(i).get(occurences.get(i).size() - 1).getLeftValue());
+        //}
 
         return unions;
 
     }
+
+
 }
