@@ -1,5 +1,6 @@
 package comp3506.assn2.application;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import comp3506.assn2.utils.*;
 
 import java.io.*;
@@ -18,7 +19,10 @@ import java.util.List;
 public class AutoTester implements Search {
 
     private OccurenceTrie documentTrie;
+    private HashMap<String, Integer> sectionIndexes;
+    private HashSet<String> stopWords;
 
+    //TODO: this
     /**
      * Create an object that performs search operations on a document.
      * If indexFileName or stopWordsFileName are null or an empty string the document should be loaded
@@ -41,18 +45,43 @@ public class AutoTester implements Search {
         }
         //TODO: Error handling
         try {
-            BufferedReader documentReader = new BufferedReader(new FileReader(documentFileName));
+            BufferedReader documentReader = new BufferedReader(new FileReader("files/" + documentFileName));
             //Remove byte order mark
             documentReader.read();
             this.documentTrie = OccurenceTrie.formTrieFromFile(documentReader);
+            sectionIndexes = readSectionIndexes(new BufferedReader(new FileReader("files/" + indexFileName)));
+            stopWords = readStopWords(new BufferedReader(new FileReader("files/" + stopWordsFileName)));
         } catch (Exception e) {
             System.err.println("IOException ");
         }
-
-        //BufferedReader indexReader = new BufferedReader(new FileReader(indexFileName));
-        //BufferedReader stopWordsReader = new BufferedReader(new FileReader(stopWordsFileName));
     }
 
+    private HashMap<String, Integer> readSectionIndexes(BufferedReader documentReader) throws IOException {
+        String line;
+        String[] lineParts;
+
+        HashMap<String, Integer> sectionIndexes = new HashMap<>();
+
+        while ((line = documentReader.readLine()) != null) {
+            line = line.toLowerCase();
+            lineParts = line.split(",", 2);
+
+            sectionIndexes.put(lineParts[0].toLowerCase(), Integer.parseInt(lineParts[1]));
+        }
+
+        return sectionIndexes;
+    }
+
+    private HashSet<String> readStopWords(BufferedReader documentReader) throws IOException {
+        String line;
+        HashSet<String> stopWords = new HashSet<>();
+
+        while ((line = documentReader.readLine()) != null) {
+            stopWords.put(line.toLowerCase());
+        }
+
+        return stopWords;
+    }
 
     /**
      * Determines the number of times the word appears in the document.
@@ -84,6 +113,7 @@ public class AutoTester implements Search {
      *         Returns an empty list if the phrase is not found in the document.
      * @throws IllegalArgumentException if phrase is null or an empty String.
      */
+    //TODO: going to have to redo this, search for phrases not just single words, can be over multiple lines
     public List<Pair<Integer,Integer>> phraseOccurrence(String phrase) throws IllegalArgumentException {
         if(phrase.length() == 0) {
             return new java.util.ArrayList<>();
@@ -109,6 +139,10 @@ public class AutoTester implements Search {
      * @throws IllegalArgumentException if prefix is null or an empty String.
      */
     public List<Pair<Integer,Integer>> prefixOccurrence(String prefix) throws IllegalArgumentException {
+        if((prefix == null) || (prefix.length() == 0)) {
+            throw new IllegalArgumentException("Invalid prefix");
+        }
+
         ArrayList<Pair<Integer, Integer>> occurences = this.documentTrie.getOccurencesForSubtree(prefix);
 
         if(occurences == null) {
@@ -130,7 +164,25 @@ public class AutoTester implements Search {
      *                                  or any of the Strings in the array are null or empty.
      */
     public List<Integer> wordsOnLine(String[] words) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Search.wordsOnLine() Not Implemented.");
+        if((words == null) || (words.length == 0)) {
+            throw new IllegalArgumentException("Invalid search words");
+        }
+
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurences = new ArrayList<>(words.length);
+
+        //Get occurences of every word
+        for(int i = 0; i < words.length; i++) {
+            if((words[i] == null) || (words[i].length() == 0)) {
+                throw new IllegalArgumentException("Invalid search word");
+            }
+
+            if(!stopWords.contains(words[i])) {
+                occurences.append(documentTrie.getOccurences(words[i].toLowerCase()));
+            }
+        }
+
+        //Find interesection of occurences
+        return Intersection.getIntersections(occurences).toJavaArrayList();
     }
 
     /**
@@ -145,7 +197,25 @@ public class AutoTester implements Search {
      *                                  or any of the Strings in the array are null or empty.
      */
     public List<Integer> someWordsOnLine(String[] words) throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Search.someWordsOnLine() Not Implemented.");
+        if((words == null) || (words.length == 0)) {
+            throw new IllegalArgumentException("Invalid search words");
+        }
+
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurences = new ArrayList<>(words.length);
+
+        //Get occurences for every word
+        for(int i = 0; i < words.length; i++) {
+            if((words[i] == null) || (words[i].length() == 0)) {
+                throw new IllegalArgumentException("Invalid search word");
+            }
+
+            if(!stopWords.contains(words[i])) {
+                occurences.append(documentTrie.getOccurences(words[i].toLowerCase()));
+            }
+        }
+
+        //Find union of occurences
+        return Intersection.getUnion(occurences).toJavaArrayList();
     }
 
     /**
@@ -164,7 +234,62 @@ public class AutoTester implements Search {
      */
     public List<Integer> wordsNotOnLine(String[] wordsRequired, String[] wordsExcluded)
             throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Search.wordsNotOnLine() Not Implemented.");
+        ArrayList<ArrayList<Pair<Integer, Integer>>> requiredOccurences = new ArrayList<>(wordsRequired.length);
+
+        if((wordsRequired == null ) || (wordsExcluded == null) ||
+                (wordsRequired.length == 0) || (wordsExcluded.length == 0)) {
+            throw new IllegalArgumentException("Invalid search words");
+        }
+
+        //Get occurences of required words
+        for(int i = 0; i < wordsRequired.length; i++) {
+            if((wordsRequired[i] == null) || (wordsRequired[i].length() == 0)) {
+                throw new IllegalArgumentException("Invalid required word");
+            }
+
+            if(!stopWords.contains(wordsRequired[i])) {
+                requiredOccurences.append(documentTrie.getOccurences(wordsRequired[i].toLowerCase()));
+            }
+        }
+
+        //Find interesection of occurences
+        ArrayList<Integer> intersection = Intersection.getIntersections(requiredOccurences);
+
+        ArrayList<ArrayList<Pair<Integer, Integer>>> excludedOccurences = new ArrayList<>(wordsExcluded.length);
+        ArrayList<Integer> pointers = new ArrayList<>(wordsExcluded.length);
+
+        int includedPointer = 0;
+        //Get occurences of not required words
+        for(int i = 0; i < wordsExcluded.length; i++) {
+            if((wordsExcluded[i] == null) || (wordsExcluded[i].length() == 0)) {
+                throw new IllegalArgumentException("Invalid excluded word");
+            }
+
+            if(!this.stopWords.contains(wordsExcluded[i])) {
+                excludedOccurences.append(documentTrie.getOccurences(wordsExcluded[i].toLowerCase()));
+                pointers.append(0);
+            }
+        }
+
+
+        while(includedPointer < intersection.size()) {
+            boolean allGreater = true;
+            for(int i = 0; i < pointers.size(); i++) {
+                if(excludedOccurences.get(i).get(pointers.get(i)).getLeftValue() < intersection.get(includedPointer)) {
+                    pointers.set(i, pointers.get(i) + 1);
+                    allGreater = false;
+                } else if (excludedOccurences.get(i).get(pointers.get(i)).getLeftValue().equals(intersection.get(includedPointer))) {
+                    //System.out.println(intersection.get(includedPointer));
+                    intersection.remove(includedPointer);
+                    break;
+                }
+            }
+            if(allGreater) {
+                includedPointer++;
+            }
+        }
+
+        return intersection.toJavaArrayList();
     }
 
     /**
