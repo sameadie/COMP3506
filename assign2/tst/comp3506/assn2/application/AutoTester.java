@@ -19,8 +19,9 @@ import java.util.List;
 public class AutoTester implements Search {
 
     private OccurenceTrie documentTrie;
-    private HashMap<String, Integer> sectionIndexes;
+    private HashMap<String, Pair<Integer, Integer>> sectionIndexes;
     private HashSet<String> stopWords;
+    private HashMap<Integer, String> textLines;
 
     //TODO: this
     /**
@@ -45,10 +46,8 @@ public class AutoTester implements Search {
         }
         //TODO: Error handling
         try {
-            BufferedReader documentReader = new BufferedReader(new FileReader("files/" + documentFileName));
-            //Remove byte order mark
-            documentReader.read();
-            this.documentTrie = OccurenceTrie.formTrieFromFile(documentReader);
+            this.textLines = readTextLines("files/" + documentFileName);
+            this.documentTrie = OccurenceTrie.formTrieFromFile("files/" + documentFileName);
             sectionIndexes = readSectionIndexes(new BufferedReader(new FileReader("files/" + indexFileName)));
             stopWords = readStopWords(new BufferedReader(new FileReader("files/" + stopWordsFileName)));
         } catch (Exception e) {
@@ -56,18 +55,47 @@ public class AutoTester implements Search {
         }
     }
 
-    private HashMap<String, Integer> readSectionIndexes(BufferedReader documentReader) throws IOException {
+    private HashMap<Integer, String> readTextLines(String filename) throws IOException{
+        BufferedReader documentReader = new BufferedReader(new FileReader(filename));
+        documentReader.read();
+
+        HashMap<Integer, String> textLines = new HashMap<>();
+        Integer lineNumber = 0;
         String line;
+
+        while((line = documentReader.readLine()) != null) {
+            this.textLines.put(lineNumber++, line);
+        }
+
+        return textLines;
+    }
+
+    private HashMap<String, Pair<Integer, Integer>> readSectionIndexes(BufferedReader documentReader) throws IOException {
+        HashMap<String, Pair<Integer, Integer>> sectionIndexes = new HashMap<>();
+
+        String firstLine, secondLine;
+        Integer firstLineNumber, secondLineNumber;
         String[] lineParts;
 
-        HashMap<String, Integer> sectionIndexes = new HashMap<>();
+        //Read first line
+        firstLine = documentReader.readLine().toLowerCase();
+        lineParts = firstLine.split(",", 2);
+        firstLineNumber = Integer.parseInt(lineParts[1]);
+        firstLine = lineParts[0];
 
-        while ((line = documentReader.readLine()) != null) {
-            line = line.toLowerCase();
-            lineParts = line.split(",", 2);
+        while ((secondLine = documentReader.readLine().toLowerCase()) != null) {
+            lineParts = secondLine.split(",", 2);
+            secondLineNumber = Integer.parseInt(lineParts[1]);
+            secondLine = lineParts[0];
 
-            sectionIndexes.put(lineParts[0].toLowerCase(), Integer.parseInt(lineParts[1]));
+            sectionIndexes.put(firstLine, new Pair<>(firstLineNumber, secondLineNumber));
+
+            firstLineNumber = secondLineNumber;
+            firstLine = secondLine;
         }
+
+        //Add last section index - to end of file
+        sectionIndexes.put(firstLine, new Pair<>(firstLineNumber, Integer.MAX_VALUE));
 
         return sectionIndexes;
     }
@@ -113,19 +141,75 @@ public class AutoTester implements Search {
      *         Returns an empty list if the phrase is not found in the document.
      * @throws IllegalArgumentException if phrase is null or an empty String.
      */
-    //TODO: going to have to redo this, search for phrases not just single words, can be over multiple lines
     public List<Pair<Integer,Integer>> phraseOccurrence(String phrase) throws IllegalArgumentException {
-        if(phrase.length() == 0) {
-            return new java.util.ArrayList<>();
+
+        if((phrase == null ) || (phrase.length() == 0)) {
+            throw new IllegalArgumentException("Invalid phrase");
         }
 
-        ArrayList<Pair<Integer, Integer>> occurences = this.documentTrie.getOccurences(phrase);
+        //Find occurences of first word
+        ArrayList<Pair<Integer, Integer>> occurences = this.documentTrie.getOccurences(phrase.split(" ")[0]);
 
-        if(occurences == null) {
-            return new java.util.ArrayList<Pair<Integer, Integer>>();
-        } else {
-            return occurences.toJavaArrayList();
+        //If search for word not phrase
+        if(!phrase.contains(" ")) {
+            if (occurences == null) {
+                return new java.util.ArrayList<Pair<Integer, Integer>>();
+            } else {
+                return occurences.toJavaArrayList();
+            }
         }
+
+        Pair<Integer, Integer> occurence;
+
+        ArrayList<Pair<Integer, Integer>> phraseOccurences = new ArrayList<>();
+
+        //Perform search starting at each occurence of first word
+        for(int i = 0; i < occurences.size(); i++) {
+            occurence = occurences.get(i);
+            if(matchPatternFromOccurence(occurence, phrase)) {
+                phraseOccurences.append(occurence);
+            }
+        }
+
+        return phraseOccurences.toJavaArrayList();
+    }
+
+    public boolean matchPatternFromOccurence(Pair<Integer, Integer> occurence, String phrase) {
+        int lineNumber = occurence.getLeftValue();
+        int columnNumber = occurence.getRightValue();
+        int stringIndex = 0;
+        char c;
+
+        while(stringIndex < phrase.length()) {
+            //Go to next line
+            if(columnNumber >= this.textLines.get(lineNumber).length()) {
+                lineNumber++;
+                columnNumber = 1;
+            }
+
+            c = this.textLines.get(lineNumber).charAt(columnNumber - 1);
+
+            //Valid char for comparison
+            if(((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || (c == ' ')) {
+                if(c != phrase.charAt(stringIndex++)) {
+                    return false;
+                }
+                //Handle apostrophe
+            } else if(c == '\'') {
+                if((columnNumber + 1 >= this.textLines.get(lineNumber).length()) || (columnNumber == 1)
+                        || (this.textLines.get(lineNumber).charAt(columnNumber - 1 - 1) == ' ')
+                        || (this.textLines.get(lineNumber).charAt(columnNumber - 1 + 1) == ' ')) {
+                    //Apostrophe at start/end of word
+                } else {
+                    if(c != phrase.charAt(stringIndex++)) {
+                        return false;
+                    }
+                }
+            }
+            columnNumber++;
+        }
+
+        return true;
     }
 
     /**
@@ -309,7 +393,39 @@ public class AutoTester implements Search {
      */
     public List<Triple<Integer,Integer,String>> simpleAndSearch(String[] titles, String[] words)
             throws IllegalArgumentException {
-        throw new UnsupportedOperationException("Search.simpleAndSearch() Not Implemented.");
+        if((words == null) || (words.length == 0)) {
+            throw new IllegalArgumentException("Invalid words");
+        }
+
+        if((titles == null) || (titles.length == 0)) {
+            throw new IllegalArgumentException("Invalid titles");
+        }
+
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurences = new ArrayList<>(words.length);
+        Pair<Integer, Integer>[] sectionRanges = new Pair[titles.length];
+
+        for(int i = 0; i < titles.length; i++) {
+            if((titles[i] == null) || (titles[i].length() == 0)) {
+                throw new IllegalArgumentException("Invalid title");
+            } else {
+                sectionRanges[i] = this.sectionIndexes.get(titles[i]);
+            }
+        }
+
+
+        //Get occurences of every word
+        for(int i = 0; i < words.length; i++) {
+            if((words[i] == null) || (words[i].length() == 0)) {
+                throw new IllegalArgumentException("Invalid search word");
+            }
+
+            if(!stopWords.contains(words[i])) {
+                occurences.append(documentTrie.getOccurences(words[i].toLowerCase()));
+            }
+        }
+
+        //Now we have all occurences and all
+
     }
 
     /**
