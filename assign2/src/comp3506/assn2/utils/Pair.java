@@ -35,4 +35,8 @@ public class Pair<L, R> {
 		this.rightValue = rightValue;
 	}
 
+	@Override
+    public String toString() {
+	    return String.format("(%d, %d)", this.getLeftValue(), this.getRightValue());
+    }
 }
