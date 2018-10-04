@@ -1,4 +1,4 @@
-bin/*/assign2/comp3506/assn2/*/*.class
+bin/**/assign2/comp3506/assn2/**/*.class
 
 
 # Created by https://www.gitignore.io/api/intellij
