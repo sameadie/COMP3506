@@ -1,114 +1,208 @@
 package comp3506.assn2.utils;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.lang.reflect.Array;
-import java.util.Arrays;
-import java.util.List;
+public class IntersectionTest {
 
-import static org.junit.Assert.*;
+    private ArrayList<Pair<Integer, Integer>> getOccurrencesWithLineNumbers(Integer[] lineNumbers) {
+        ArrayList<Pair<Integer, Integer>> occurrences = new ArrayList<>(lineNumbers.length);
+        for (int i = 0; i < lineNumbers.length; i++) {
+            occurrences.append(new Pair<>(lineNumbers[i], 1));
+        }
+        return occurrences;
+    }
 
-public class IntersectionTest  {
-
-    private ArrayList<ArrayList<Pair<Integer, Integer>>> occurences;
-    private String filename = "files/shakespeare_extract.txt";
-    private BufferedReader documentReader;
-
-
-    @Test
-    public void getIntersections() throws Exception {
-        String[] words = new String[]{"thee", "i", "this"};
-        documentReader = new BufferedReader(new FileReader(filename));
-        OccurenceTrie documentTrie = OccurenceTrie.formTrieFromFile(documentReader);
-        documentReader.close();
-
-        this.occurences = new ArrayList<>(words.length);
-
-        for(int i = 0; i < words.length; i++) {
-            this.occurences.append(documentTrie.getOccurences(words[i]));
+    private boolean isLineNumberInOccurrences(ArrayList<Pair<Integer, Integer>> occurrences, Integer lineNumber) {
+        for (int i = 0; i < occurrences.size(); i++) {
+            if (occurrences.get(i).getLeftValue().equals(lineNumber)) {
+                return true;
+            }
         }
 
-        java.util.ArrayList<Integer> intersections = Intersection.getIntersections(this.occurences).toJavaArrayList();
-        System.out.println(intersections.toString());
+        return false;
+    }
 
-        //Reopen file
-        documentReader = new BufferedReader(new FileReader("files/shakespeare_extract.txt"));
-        String line;
-        int lineNumber = 1;
-        List<String> lineWords;
+    private void testOccurrencesForIntersection(ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences) {
+        ArrayList<Integer> intersection = Intersection.getIntersections(occurrences);
+        ArrayList<Integer> intersectionCheck = new ArrayList<>();
 
-        while((line = documentReader.readLine()) != null) {
-            line = line.toLowerCase();
-            line = line.replaceAll("[^a-z0-9()' ]", "");
-            lineWords = Arrays.asList(line.split(" "));
-
-            boolean containsAll = true;
-            //Check all lines in intersection contain all specified words and all other lines dont
-            for(int i = 0; i < words.length; i++) {
-                if (!lineWords.contains(words[i])) {
-                    containsAll = false;
+        for (int i = 0; i < occurrences.get(0).size(); i++) {
+            Integer lineNumber = occurrences.get(0).get(i).getLeftValue();
+            boolean inAll = true;
+            for (int j = 1; j < occurrences.size(); j++) {
+                if (!isLineNumberInOccurrences(occurrences.get(j), lineNumber)) {
+                    inAll = false;
                     break;
                 }
             }
 
-            //if(intersections.toJavaArrayList().contains(lineNumber) != containsAll) {
-            //    System.out.println(String.format("Discrepancy on line '%s': %d", line, lineNumber));
-            //}
+            if (inAll && (!intersectionCheck.contains(lineNumber))) {
+                intersectionCheck.append(lineNumber);
+            }
 
-            Assert.assertEquals(intersections.contains(lineNumber), containsAll);
-
-            lineNumber++;
         }
-        documentReader.close();
+
+        Assert.assertEquals(intersection.size(), intersectionCheck.size());
+        for (int i = 0; i < intersectionCheck.size(); i++) {
+            Assert.assertTrue(intersection.contains(intersectionCheck.get(i)));
+        }
+
+
+    }
+
+    private void testOccurrencesForUnion(ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences) {
+        ArrayList<Integer> unionCheck = new ArrayList<>();
+        for (int i = 0; i < occurrences.size(); i++) {
+            for (int j = 0; j < occurrences.get(i).size(); j++) {
+                Integer lineNumber = occurrences.get(i).get(j).getLeftValue();
+                if (!unionCheck.contains(lineNumber)) {
+                    unionCheck.append(lineNumber);
+                }
+            }
+        }
+
+        ArrayList<Integer> union = Intersection.getUnion(occurrences);
+
+        Assert.assertEquals(union.size(), unionCheck.size());
+        for (int i = 0; i < unionCheck.size(); i++) {
+            Assert.assertTrue(union.contains(unionCheck.get(i)));
+        }
     }
 
     @Test
-    public void getUnions() throws Exception {
-        String[] words = new String[]{"dyer's", "askance", "quenched"};
-        documentReader = new BufferedReader(new FileReader(filename));
-        OccurenceTrie documentTrie = OccurenceTrie.formTrieFromFile(documentReader);
-        documentReader.close();
+    public void testNoIntersection() {
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
 
-        this.occurences = new ArrayList<>(words.length);
+        //Add occurrences to list
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 4, 7, 10, 13, 16}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{2, 5, 8, 11, 14, 17, 19}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{3, 6, 9, 15, 18}));
 
-        for(int i = 0; i < words.length; i++) {
-            this.occurences.append(documentTrie.getOccurences(words[i]));
-        }
-
-        java.util.ArrayList<Integer> unions = Intersection.getUnion(this.occurences).toJavaArrayList();
-        System.out.println(unions.toString());
-
-        //Reopen file
-        documentReader = new BufferedReader(new FileReader("files/shakespeare_extract.txt"));
-        String line;
-        int lineNumber = 1;
-        List<String> lineWords;
-
-        while((line = documentReader.readLine()) != null) {
-            line = line.toLowerCase();
-            line = line.replaceAll("[^a-z0-9()' ]", "");
-            lineWords = Arrays.asList(line.split(" "));
-
-            boolean oneEqual = false;
-
-            //Check all lines in union contain at least one of the words
-            for(int i = 0; i < words.length; i++) {
-                if(lineWords.contains(words[i])) {
-                    oneEqual = true;
-                    break;
-                }
-            }
-
-            Assert.assertEquals(unions.contains(lineNumber), oneEqual);
-
-            lineNumber++;
-        }
-        documentReader.close();
+        testOccurrencesForIntersection(occurrences);
     }
 
+    @Test
+    public void testIntersectionAtEnds() {
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+
+        //Add occurrences to list
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 7, 10, 13, 17}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 5, 8, 11, 14, 17}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 6, 9, 12, 15, 17}));
+
+        testOccurrencesForIntersection(occurrences);
+    }
+
+    @Test
+    public void testIntersectionGeneralCase() {
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+
+        //Add occurrences to list
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 4, 5, 7, 8, 9, 10, 11, 13, 17}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 5, 8, 11, 14, 17}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 6, 9, 11, 15, 17}));
+
+        testOccurrencesForIntersection(occurrences);
+    }
+
+    @Test
+    public void testIntersectionDuplicates() {
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+
+        //Add occurrences to list
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 1, 5, 6, 7, 11, 11}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 5, 8, 11, 11, 14, 17}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 6, 9, 11, 15, 17}));
+
+        testOccurrencesForIntersection(occurrences);
+    }
+
+    @Test
+    public void testIntersectionEmptyCase() {
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+
+        //Add occurrences to list
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 4, 5, 7, 8, 9, 10, 11, 13, 17}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 6, 9, 11, 15, 17}));
+
+        testOccurrencesForIntersection(occurrences);
+    }
+
+    @Test
+    public void testIntersectionSingleCase() {
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+
+        //Add occurrences to list
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 4, 5, 7, 8, 9, 10, 11, 13, 17}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{11}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 6, 9, 11, 15, 17}));
+
+        testOccurrencesForIntersection(occurrences);
+    }
+
+
+    @Test
+    public void testNoUnion() {
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+
+        //Add occurrences to list
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{}));
+
+        testOccurrencesForUnion(occurrences);
+    }
+
+    @Test
+    public void testUnionNoDuplicates() {
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+
+        //Add occurrences to list
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 4, 7, 10, 13, 16, 18, 19}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{2, 5, 8, 11, 14}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{3, 6, 9, 12, 15, 17, 20}));
+
+        testOccurrencesForUnion(occurrences);
+    }
+
+
+    @Test
+    public void testUnionDuplicatesAtEnds() {
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+
+        //Add occurrences to list
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 1, 7, 10, 14}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 5, 8, 11, 14}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 6, 9, 12, 14}));
+
+        testOccurrencesForUnion(occurrences);
+    }
+
+
+    @Test
+    public void testUnionDuplicatesAtEndsMultiple() {
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+
+        //Add occurrences to list
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 1, 4, 7, 10, 13}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 1, 5, 8, 11, 14}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 1, 1, 1, 9, 12, 15}));
+
+        testOccurrencesForUnion(occurrences);
+    }
+
+
+    @Test
+    public void testGeneralCase() {
+        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+
+        //Add occurrences to list
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 4, 7, 8, 9, 11, 10, 13}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{2, 5, 11, 11, 14}));
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{3, 6, 9, 12, 15, 16, 17, 18, 19}));
+
+        testOccurrencesForUnion(occurrences);
+    }
 }

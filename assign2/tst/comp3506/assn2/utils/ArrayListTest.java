@@ -31,6 +31,7 @@ class ArrayListTest {
     }
 
     private boolean compareArrayLists(ArrayList<Object> test, java.util.ArrayList<Object> comparison) {
+
         if(test.size() != comparison.size()) {
             return false;
         }
@@ -88,7 +89,7 @@ class ArrayListTest {
                     comparisonArrayList.remove(testObjects[i]));
 
             Assert.assertTrue(compareArrayLists(testArrayList, comparisonArrayList));
-            System.out.println(testArrayList.toString());
+
         }
     }
 
@@ -138,9 +139,6 @@ class ArrayListTest {
         extendComparisonArrayList.forEach(object -> {
             comparisonArrayList.add(object);
         });
-
-        System.err.println(testArrayList.toJavaArrayList().toString());
-        System.err.println(comparisonArrayList.toString());
 
         for(int i = 0; i < testArrayList.size(); i++) {
             Assert.assertTrue(comparisonArrayList.contains(testArrayList.get(i)));
