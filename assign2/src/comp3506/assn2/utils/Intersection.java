@@ -1,8 +1,8 @@
 package comp3506.assn2.utils;
 
 /**
- * Static helper methods for finding logical operations on multiple arrays, specifically, the intersection (AND)
- * and union (OR) of n ArrayLists can be computed
+ * Static helper methods for finding logical operations on multiple arrays, specifically, the intersection (AND),
+ * union (OR) and not (NOT) of n ArrayLists can be computed
  */
 public class Intersection {
 
@@ -36,7 +36,21 @@ public class Intersection {
      *      A list of the intersecting line numbers
      */
     public static ArrayList<Integer> getIntersections(ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences) {
+
+        System.out.println("Find intersection of: ");
+        for(int i = 0; i < occurrences.size(); i++) {
+            System.out.println(occurrences.get(i).toJavaArrayList().toString());
+        }
+
         ArrayList<Integer> intersections = new ArrayList<>();
+
+        if(occurrences.size() == 1) {
+            for(int i = 0; i < occurrences.get(0).size(); i++) {
+                intersections.append(occurrences.get(0).get(i).getLeftValue());
+            }
+
+            return intersections;
+        }
 
         //Initialise a pointer to start of every array
         ArrayList<Integer> pointers = new ArrayList<>(occurrences.size());
@@ -82,11 +96,13 @@ public class Intersection {
 
                 //Move all pointers off last minimumValue to avoid duplicates
                 for(int i = 0; i < pointers.size(); i++) {
-                    do {
+                    while(occurrences.get(i).get(pointers.get(i)).getLeftValue() == minimumValue) {
                         if(pointers.get(i) + 1 < occurrences.get(i).size()) {
                             pointers.set(i, pointers.get(i) + 1);
-                        } else { break;}
-                    } while(occurrences.get(i).get(pointers.get(i)).getLeftValue() == minimumValue);
+                        } else {
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -96,12 +112,13 @@ public class Intersection {
             }
 
             //Increment smallest value - passing over duplicates
-            do {
+            while(occurrences.get(minimumIndex).get(pointers.get(minimumIndex)).getLeftValue() == minimumValue) {
                 if(pointers.get(minimumIndex) + 1 < occurrences.get(minimumIndex).size()) {
                     pointers.set(minimumIndex, pointers.get(minimumIndex) + 1);
-                } else { break;}
-            } while(occurrences.get(minimumIndex).get(pointers.get(minimumIndex)).getLeftValue() == minimumValue);
-
+                } else {
+                    break;
+                }
+            }
         }
 
         //Check last elements aren't an intersection
@@ -109,6 +126,8 @@ public class Intersection {
 
         //Check last value already added
         if((intersections.size() != 0 ) && (intersections.get(intersections.size() - 1).equals(lastValue))) {
+            System.out.println("this gives");
+            System.out.println(intersections.toJavaArrayList().toString());
             return intersections;
         }
 
@@ -119,6 +138,8 @@ public class Intersection {
             }
         }
 
+        System.out.println("this gives");
+        System.out.println(intersections.toJavaArrayList().toString());
         //Last value is an intersection
         intersections.append(lastValue);
         return intersections;
@@ -150,6 +171,10 @@ public class Intersection {
             pointers.append(0);
         }
 
+        if (occurrences.size() == 0) {
+            return new ArrayList<>(0);
+        }
+
         //Traverse all lists, finding intersections
         do {
             int minimumIndex = 0;
@@ -161,14 +186,15 @@ public class Intersection {
                 //If duplicate is found, move pointer along without adding to union
                 for(int j = i + 1; j < pointers.size(); j++) {
                     if(occurrences.get(i).get(pointers.get(i)).getLeftValue().equals(occurrences.get(j).get(pointers.get(j)).getLeftValue())) {
-                        pointers.set(i, pointers.get(i) + 1);
+                        pointers.set(j, pointers.get(j) + 1);
+
                         //Remove completed arrays
-                        if(pointers.get(i) + 1 >= occurrences.get(i).size()) {
-                            pointers.remove(i);
-                            occurrences.remove(i);
+                        if(pointers.get(j) + 1 > occurrences.get(j).size()) {
+                            pointers.remove(j);
+                            occurrences.remove(j);
                         }
-                        i--;
-                        continue outerLoop;
+                        //continue outerLoop;
+                        j--;
                     }
                 }
 
@@ -188,8 +214,61 @@ public class Intersection {
                 pointers.remove(minimumIndex);
                 occurrences.remove(minimumIndex);
             }
+
+            //Jump over duplicates
+            while((pointers.get(minimumIndex) > 0) && (pointers.get(minimumIndex) < occurrences.get(minimumIndex).size()) && (occurrences.get(minimumIndex).get(pointers.get(minimumIndex)).equals(occurrences.get(minimumIndex).get(pointers.get(minimumIndex) - 1)))) {
+                pointers.set(minimumIndex, pointers.get(minimumIndex) + 1);
+            }
+
         } while(occurrences.size() != 0); //!allPointersFinished(occurrences, pointers));
 
         return unions;
+    }
+
+    public static ArrayList<Integer> getNot(ArrayList<Integer> occurrences, ArrayList<ArrayList<HashPair<Integer, Integer>>> notOccurrences) {
+
+        System.out.println("From these:");
+        System.out.println(occurrences.toJavaArrayList().toString());
+
+        System.out.println("Remove these: ");
+        for(int i = 0; i < notOccurrences.size(); i++) {
+            System.out.println(notOccurrences.get(i).toJavaArrayList().toString());
+        }
+        System.out.println("This gives: ");
+
+        int includedPointer = 0;
+        ArrayList<Integer> notPointers = new ArrayList<>(notOccurrences.size());
+        for (int i = 0; i < notOccurrences.size(); i++) {
+            notPointers.append(0);
+        }
+
+
+        while (includedPointer < occurrences.size()) {
+            boolean allGreater = true;
+            for (int i = 0; i < notPointers.size(); i++) {
+                if (notOccurrences.get(i).get(notPointers.get(i)).getLeftValue() < occurrences.get(includedPointer)) {
+                    if(notPointers.get(i) + 1 < notOccurrences.get(i).size()) {
+                        notPointers.set(i, notPointers.get(i) + 1);
+                    } else {
+                        notPointers.remove(i);
+                        notOccurrences.remove(i);
+                    }
+                    allGreater = false;
+                } else if (notOccurrences.get(i).get(notPointers.get(i)).getLeftValue().equals(occurrences.get(includedPointer))) {
+                    occurrences.remove(includedPointer);
+                    allGreater = false;
+                    break;
+                }
+            }
+
+            if (allGreater) {
+                includedPointer++;
+            }
+        }
+
+        System.out.println(occurrences.toJavaArrayList().toString());
+        System.out.println("END");
+
+        return occurrences;
     }
 }

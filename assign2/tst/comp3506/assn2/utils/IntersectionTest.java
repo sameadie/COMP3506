@@ -24,6 +24,12 @@ public class IntersectionTest {
     }
 
     private void testOccurrencesForIntersection(ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences) {
+        System.out.println("Finding intersection of : ");
+
+        for(int i = 0; i < occurrences.size(); i++) {
+            System.out.println(occurrences.get(i).toJavaArrayList().toString());
+        }
+
         ArrayList<Integer> intersection = Intersection.getIntersections(occurrences);
         ArrayList<Integer> intersectionCheck = new ArrayList<>();
 
@@ -43,6 +49,9 @@ public class IntersectionTest {
 
         }
 
+        System.out.println("Test: " + intersection.toJavaArrayList().toString());
+        System.out.println("Comp: " + intersectionCheck.toJavaArrayList().toString());
+
         Assert.assertEquals(intersection.size(), intersectionCheck.size());
         for (int i = 0; i < intersectionCheck.size(); i++) {
             Assert.assertTrue(intersection.contains(intersectionCheck.get(i)));
@@ -52,6 +61,12 @@ public class IntersectionTest {
     }
 
     private void testOccurrencesForUnion(ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences) {
+        System.out.println("Finding union of: ");
+
+        for(int i = 0; i < occurrences.size(); i++) {
+            System.out.println(occurrences.get(i).toJavaArrayList().toString());
+        }
+
         ArrayList<Integer> unionCheck = new ArrayList<>();
         for (int i = 0; i < occurrences.size(); i++) {
             for (int j = 0; j < occurrences.get(i).size(); j++) {
@@ -64,9 +79,48 @@ public class IntersectionTest {
 
         ArrayList<Integer> union = Intersection.getUnion(occurrences);
 
+        System.out.println("Test: " + union.toJavaArrayList().toString());
+        System.out.println("Comp: " + unionCheck.toJavaArrayList().toString());
+
         Assert.assertEquals(union.size(), unionCheck.size());
         for (int i = 0; i < unionCheck.size(); i++) {
             Assert.assertTrue(union.contains(unionCheck.get(i)));
+        }
+    }
+
+    private void testOccurrencesForNot(ArrayList<Integer> occurences, ArrayList<ArrayList<HashPair<Integer, Integer>>> notOccurrences) {
+
+        System.out.println("Removing : ");
+        for(int i = 0; i < notOccurrences.size(); i++) {
+            System.out.println(notOccurrences.get(i).toJavaArrayList().toString());
+        }
+
+        System.out.println("from ");
+
+        System.out.println(occurences.toJavaArrayList().toString());
+
+        ArrayList<Integer> notCheck = new ArrayList<>();
+        for(int i = 0; i < occurences.size(); i++) {
+            boolean isValidOccurence = true;
+            for(int j = 0; j < notOccurrences.size(); j++) {
+                if(isLineNumberInOccurrences(notOccurrences.get(j), occurences.get(i))) {
+                    isValidOccurence = false;
+                }
+            }
+
+            if(isValidOccurence) {
+                notCheck.append(occurences.get(i));
+            }
+        }
+
+        ArrayList<Integer> not = Intersection.getNot(occurences, notOccurrences);
+
+        System.out.println("test: " + not.toJavaArrayList().toString());
+        System.out.println("comp: " + notCheck.toJavaArrayList().toString());
+
+        Assert.assertEquals(not.size(), notCheck.size());
+        for (int i = 0; i < notCheck.size(); i++) {
+            Assert.assertTrue(not.contains(notCheck.get(i)));
         }
     }
 
@@ -142,6 +196,15 @@ public class IntersectionTest {
         testOccurrencesForIntersection(occurrences);
     }
 
+    @Test
+    public void testIntersectionSingleOccurrence() {
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>();
+
+        //Add occurrences to list
+        occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 4, 5, 7}));
+
+        testOccurrencesForIntersection(occurrences);
+    }
 
     @Test
     public void testNoUnion() {
@@ -205,4 +268,80 @@ public class IntersectionTest {
 
         testOccurrencesForUnion(occurrences);
     }
+
+    @Test
+    public void testSingleNot() {
+        ArrayList<Integer> occurrences = new ArrayList<>();
+        occurrences.append(1);
+        occurrences.append(1);
+        occurrences.append(2);
+        occurrences.append(3);
+        occurrences.append(4);
+        occurrences.append(4);
+        occurrences.append(7);
+
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> notOccurrences = new ArrayList<>();
+        //notOccurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 2, 3, 4}));
+        notOccurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 2, 3, 4}));
+
+        testOccurrencesForNot(occurrences, notOccurrences);
+    }
+
+    @Test
+    public void testTwoNotsButSame() {
+        ArrayList<Integer> occurrences = new ArrayList<>();
+        occurrences.append(1);
+        occurrences.append(1);
+        occurrences.append(2);
+        occurrences.append(3);
+        occurrences.append(4);
+        occurrences.append(4);
+        occurrences.append(7);
+
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> notOccurrences = new ArrayList<>();
+        notOccurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 2, 3, 4}));
+        notOccurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 2, 3, 4}));
+
+        testOccurrencesForNot(occurrences, notOccurrences);
+    }
+
+    @Test
+    public void testTwoNotButDifferent() {
+        ArrayList<Integer> occurrences = new ArrayList<>();
+        occurrences.append(1);
+        occurrences.append(1);
+        occurrences.append(2);
+        occurrences.append(3);
+        occurrences.append(4);
+        occurrences.append(4);
+        occurrences.append(7);
+
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> notOccurrences = new ArrayList<>();
+        notOccurrences.append(getOccurrencesWithLineNumbers(new Integer[]{2, 4}));
+        notOccurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 3, 4}));
+
+        testOccurrencesForNot(occurrences, notOccurrences);
+    }
+
+    @Test
+    public void testDuplicates() {
+        ArrayList<Integer> occurrences = new ArrayList<>();
+        occurrences.append(1);
+        occurrences.append(1);
+        occurrences.append(2);
+        occurrences.append(3);
+        occurrences.append(4);
+        occurrences.append(4);
+        occurrences.append(5);
+        occurrences.append(6);
+        occurrences.append(7);
+        occurrences.append(7);
+
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> notOccurrences = new ArrayList<>();
+        notOccurrences.append(getOccurrencesWithLineNumbers(new Integer[]{2, 4, 7}));
+        notOccurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 3, 4}));
+
+        testOccurrencesForNot(occurrences, notOccurrences);
+    }
+
 }

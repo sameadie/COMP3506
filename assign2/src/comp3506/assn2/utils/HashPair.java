@@ -8,18 +8,22 @@ public class HashPair<L, R> extends Pair<L, R> {
 
     @Override
     public String toString() {
-        return String.format("(%d, %d)", this.getLeftValue(), this.getRightValue());
+        return String.format("(%s, %s)", this.getLeftValue().toString(), this.getRightValue().toString());
     }
 
     @Override
     public boolean equals(Object o) {
-        if(!(o instanceof Pair)) {
+        if(o == null) {
+            return false;
+        }
+        if(this.getClass() != o.getClass()) {
             return false;
         }
 
         Pair<L, R> otherPair = (Pair<L, R>) o;
 
-        return otherPair.getLeftValue().equals(this.getLeftValue()) && otherPair.getRightValue().equals(this.getRightValue());
+        return otherPair.getLeftValue().equals(this.getLeftValue()) &&
+                otherPair.getRightValue().equals(this.getRightValue());
     }
 
     @Override
