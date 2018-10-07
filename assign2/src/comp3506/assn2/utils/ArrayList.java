@@ -251,16 +251,16 @@ public class ArrayList <E> {
         int leftPointer = 0;
         int rightPointer = this.numElements - 1;
 
-        while(leftPointer < rightPointer) {
-            int middlePointer = leftPointer + rightPointer + 1;
+        while(leftPointer <= rightPointer) {
+            int middlePointer = (leftPointer + rightPointer + 1) / 2;
             int comparison = comparator.compare(this.array[middlePointer], value);
 
             //Search left half
             if(comparison > 0) {
-                rightPointer = middlePointer;
+                rightPointer = middlePointer - 1;
             //Search right half
             } else if(comparison < 0) {
-                leftPointer = middlePointer;
+                leftPointer = middlePointer + 1;
             //Found match
             } else {
                 return middlePointer;
