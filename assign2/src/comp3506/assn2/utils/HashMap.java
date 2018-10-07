@@ -1,5 +1,7 @@
 package comp3506.assn2.utils;
 
+import static java.lang.Math.abs;
+
 /**
  * A generic HashMap implementation utilising linear-probing
  *
@@ -13,7 +15,7 @@ public class HashMap<K, V> {
     /**
      * A generic entry in the HashMap
      */
-    public class Entry {
+    public class Entry<K, V> {
         private K key;
         private V value;
 
@@ -78,7 +80,7 @@ public class HashMap<K, V> {
      */
     public HashMap(int initialSize) {
         this.size = initialSize;
-        entries = (Entry[])new Object[initialSize];
+        entries = new Entry[this.size];
         AVAILABLE_POSITION = new Entry(null, null);
     }
 
@@ -106,7 +108,7 @@ public class HashMap<K, V> {
             return -1;
         }
 
-        int i = key.hashCode();
+        int i = abs(key.hashCode() % this.size);
         int j = i;
 
         do {
@@ -114,7 +116,7 @@ public class HashMap<K, V> {
                 return -i -1;
             } else if(this.entries[i] == AVAILABLE_POSITION) {
                 availableIndex = i;
-                i = (i+1) & this.size;
+                i = (i + 1) % this.size;
             } else if(key.equals(this.entries[i].getKey())) {
                 return i;
             } else {
@@ -132,14 +134,24 @@ public class HashMap<K, V> {
     private void rehashTable() {
         this.size *= RESIZE_FACTOR;
         Entry[] oldEntries = this.entries;
-        this.entries = (Entry[])new Object[this.size];
+        this.entries = new Entry[this.size];
 
         for(int i = 0; i < oldEntries.length; i++) {
             if((oldEntries[i] != null) && (oldEntries[i] != AVAILABLE_POSITION)) {
-                int newIndex = findKeyEntry(oldEntries[i].getKey());
+                int newIndex = findKeyEntry((K) oldEntries[i].getKey());
                 this.entries[-newIndex-1] = oldEntries[i];
             }
         }
+    }
+
+    /**
+     * Returns the number of elements in the HashMap
+     *
+     * @return
+     *      The number of elements in the HashMap
+     */
+    public int getSize() {
+        return this.numEntries;
     }
 
     /**
@@ -157,7 +169,7 @@ public class HashMap<K, V> {
         if (i < 0) {
             return null;
         } else {
-            return this.entries[i].getValue();
+            return (V) this.entries[i].getValue();
         }
     }
 

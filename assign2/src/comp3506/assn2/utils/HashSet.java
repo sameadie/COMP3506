@@ -19,16 +19,25 @@ public class HashSet<E> {
      *      The initial capacity of the HashSet
      */
     public HashSet(int initialSize) {
-        hashMap = new HashMap<>(initialSize);
+        hashMap = new HashMap(initialSize);
     }
 
     /**
      * Initialises an empty HashSet with default initial size
      */
     public HashSet() {
-        hashMap = new HashMap<>();
+        hashMap = new HashMap();
     }
 
+    /**
+     * Returns the number of elements in the set
+     *
+     * @return
+     *      The number of elements in the set
+     */
+    public int getSize() {
+        return this.hashMap.getSize();
+    }
     /**
      * Adds the specified element to the set
      *
