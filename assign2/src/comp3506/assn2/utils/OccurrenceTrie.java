@@ -55,13 +55,13 @@ public class OccurrenceTrie {
      *                  word in the trie
      *      int      - the length of the longest found prefix
      */
-    public Pair<OccurrenceTrieNode, Integer> getLongestPrefixNode(String word) {
+    public HashPair<OccurrenceTrieNode, Integer> getLongestPrefixNode(String word) {
         OccurrenceTrieNode reference = this.root;
         OccurrenceTrieNode next = reference;
         int stringIndex = 0;
 
         if(word.length() == 0) {
-            return new Pair<>(this.root, 0);
+            return new HashPair<>(this.root, 0);
         }
 
         do {
@@ -70,9 +70,9 @@ public class OccurrenceTrie {
         } while((stringIndex < word.length()) && (next != null));
 
         if(next == null) {
-            return new Pair(reference, stringIndex - 1);
+            return new HashPair(reference, stringIndex - 1);
         } else {
-            return new Pair(next, stringIndex);
+            return new HashPair(next, stringIndex);
         }
     }
 
@@ -87,7 +87,7 @@ public class OccurrenceTrie {
      *      The node that terminates the specified word in the trie, else null
      */
     public OccurrenceTrieNode getNodeTerminatingWord(String word) {
-        Pair<OccurrenceTrieNode, Integer> longestPrefix = getLongestPrefixNode(word);
+        HashPair<OccurrenceTrieNode, Integer> longestPrefix = getLongestPrefixNode(word);
 
         //Word was in trie: longest prefix == word
         if(longestPrefix.getRightValue() == word.length()) {
@@ -104,11 +104,11 @@ public class OccurrenceTrie {
      * @return
      *      The occurrences of the word in line number, column number pairs
      */
-    public ArrayList<Pair<Integer, Integer>> getOccurrences(String word) {
+    public ArrayList<HashPair<Integer, Integer>> getOccurrences(String word) {
         OccurrenceTrieNode terminatingNode = getNodeTerminatingWord(word);
 
         if(terminatingNode == null) {
-            return new ArrayList<Pair<Integer, Integer>>();
+            return new ArrayList<HashPair<Integer, Integer>>();
         }
 
         return terminatingNode.getOccurrences();
@@ -141,7 +141,7 @@ public class OccurrenceTrie {
      * @param occurrences
      *      An ArrayList of occurrences to add to
      */
-    private void getOccurrencesRecursiveHelper(OccurrenceTrieNode root, ArrayList<Pair<Integer, Integer>> occurrences) {
+    private void getOccurrencesRecursiveHelper(OccurrenceTrieNode root, ArrayList<HashPair<Integer, Integer>> occurrences) {
         occurrences.extend(root.getOccurrences());
 
         for(int i = 0; i < root.getChildren().size(); i++) {
@@ -157,7 +157,7 @@ public class OccurrenceTrie {
      * @return
      *      The occurrences of the specified prefix in the trie
      */
-    public ArrayList<Pair<Integer, Integer>> getOccurrencesForSubtree(String prefix) {
+    public ArrayList<HashPair<Integer, Integer>> getOccurrencesForSubtree(String prefix) {
         OccurrenceTrieNode subtreeRoot = getNodeTerminatingWord(prefix);
 
         //Prefix not in trie
@@ -165,7 +165,7 @@ public class OccurrenceTrie {
             return null;
         }
 
-        ArrayList<Pair<Integer, Integer>> occurrences = new ArrayList<Pair< Integer, Integer>>();
+        ArrayList<HashPair<Integer, Integer>> occurrences = new ArrayList<HashPair< Integer, Integer>>();
 
         //Traverse subtree rooted at longestPrefix's node - accumulate occurrences
         getOccurrencesRecursiveHelper(subtreeRoot, occurrences);
@@ -182,9 +182,9 @@ public class OccurrenceTrie {
      * @param occurrence
      *      The line number, column number pair of the occurrence of the word
      */
-    public void addOccurrence(String word, Pair<Integer, Integer> occurrence, Integer sectionNumber) {
+    public void addOccurrence(String word, HashPair<Integer, Integer> occurrence, Integer sectionNumber) {
         //Find longest prefix of word already in trie
-        Pair<OccurrenceTrieNode, Integer> longestPrefix = getLongestPrefixNode(word);
+        HashPair<OccurrenceTrieNode, Integer> longestPrefix = getLongestPrefixNode(word);
         int stringIndex = longestPrefix.getRightValue();
         OccurrenceTrieNode reference = longestPrefix.getLeftValue();
 

@@ -16,7 +16,7 @@ public class Intersection {
      * @return
      *      True iff all pointers point to the end of their arrays, else false
      */
-    private static boolean allPointersFinished(ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences, ArrayList<Integer> pointers) {
+    private static boolean allPointersFinished(ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences, ArrayList<Integer> pointers) {
         for(int i = 0; i < occurrences.size(); i++) {
             if(pointers.get(i) + 1 != occurrences.get(i).size()) {
                 return false;
@@ -35,7 +35,7 @@ public class Intersection {
      * @return
      *      A list of the intersecting line numbers
      */
-    public static ArrayList<Integer> getIntersections(ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences) {
+    public static ArrayList<Integer> getIntersections(ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences) {
         ArrayList<Integer> intersections = new ArrayList<>();
 
         //Initialise a pointer to start of every array
@@ -134,7 +134,7 @@ public class Intersection {
      * @return
      *      A list of the union line numbers
      */
-    public static ArrayList<Integer> getUnion(ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences) {
+    public static ArrayList<Integer> getUnion(ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences) {
         ArrayList<Integer> unions = new ArrayList<>();
 
         //Initialise a pointer to start of every array

@@ -5,15 +5,15 @@ import org.junit.Test;
 
 public class IntersectionTest {
 
-    private ArrayList<Pair<Integer, Integer>> getOccurrencesWithLineNumbers(Integer[] lineNumbers) {
-        ArrayList<Pair<Integer, Integer>> occurrences = new ArrayList<>(lineNumbers.length);
+    private ArrayList<HashPair<Integer, Integer>> getOccurrencesWithLineNumbers(Integer[] lineNumbers) {
+        ArrayList<HashPair<Integer, Integer>> occurrences = new ArrayList<>(lineNumbers.length);
         for (int i = 0; i < lineNumbers.length; i++) {
-            occurrences.append(new Pair<>(lineNumbers[i], 1));
+            occurrences.append(new HashPair<>(lineNumbers[i], 1));
         }
         return occurrences;
     }
 
-    private boolean isLineNumberInOccurrences(ArrayList<Pair<Integer, Integer>> occurrences, Integer lineNumber) {
+    private boolean isLineNumberInOccurrences(ArrayList<HashPair<Integer, Integer>> occurrences, Integer lineNumber) {
         for (int i = 0; i < occurrences.size(); i++) {
             if (occurrences.get(i).getLeftValue().equals(lineNumber)) {
                 return true;
@@ -23,7 +23,7 @@ public class IntersectionTest {
         return false;
     }
 
-    private void testOccurrencesForIntersection(ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences) {
+    private void testOccurrencesForIntersection(ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences) {
         ArrayList<Integer> intersection = Intersection.getIntersections(occurrences);
         ArrayList<Integer> intersectionCheck = new ArrayList<>();
 
@@ -51,7 +51,7 @@ public class IntersectionTest {
 
     }
 
-    private void testOccurrencesForUnion(ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences) {
+    private void testOccurrencesForUnion(ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences) {
         ArrayList<Integer> unionCheck = new ArrayList<>();
         for (int i = 0; i < occurrences.size(); i++) {
             for (int j = 0; j < occurrences.get(i).size(); j++) {
@@ -72,7 +72,7 @@ public class IntersectionTest {
 
     @Test
     public void testNoIntersection() {
-        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>();
 
         //Add occurrences to list
         occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 4, 7, 10, 13, 16}));
@@ -84,7 +84,7 @@ public class IntersectionTest {
 
     @Test
     public void testIntersectionAtEnds() {
-        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>();
 
         //Add occurrences to list
         occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 7, 10, 13, 17}));
@@ -96,7 +96,7 @@ public class IntersectionTest {
 
     @Test
     public void testIntersectionGeneralCase() {
-        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>();
 
         //Add occurrences to list
         occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 4, 5, 7, 8, 9, 10, 11, 13, 17}));
@@ -108,7 +108,7 @@ public class IntersectionTest {
 
     @Test
     public void testIntersectionDuplicates() {
-        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>();
 
         //Add occurrences to list
         occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 1, 5, 6, 7, 11, 11}));
@@ -120,7 +120,7 @@ public class IntersectionTest {
 
     @Test
     public void testIntersectionEmptyCase() {
-        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>();
 
         //Add occurrences to list
         occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 4, 5, 7, 8, 9, 10, 11, 13, 17}));
@@ -132,7 +132,7 @@ public class IntersectionTest {
 
     @Test
     public void testIntersectionSingleCase() {
-        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>();
 
         //Add occurrences to list
         occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 4, 5, 7, 8, 9, 10, 11, 13, 17}));
@@ -145,7 +145,7 @@ public class IntersectionTest {
 
     @Test
     public void testNoUnion() {
-        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>();
 
         //Add occurrences to list
         occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{}));
@@ -157,7 +157,7 @@ public class IntersectionTest {
 
     @Test
     public void testUnionNoDuplicates() {
-        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>();
 
         //Add occurrences to list
         occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 4, 7, 10, 13, 16, 18, 19}));
@@ -170,7 +170,7 @@ public class IntersectionTest {
 
     @Test
     public void testUnionDuplicatesAtEnds() {
-        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>();
 
         //Add occurrences to list
         occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 1, 7, 10, 14}));
@@ -183,7 +183,7 @@ public class IntersectionTest {
 
     @Test
     public void testUnionDuplicatesAtEndsMultiple() {
-        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>();
 
         //Add occurrences to list
         occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 1, 4, 7, 10, 13}));
@@ -196,7 +196,7 @@ public class IntersectionTest {
 
     @Test
     public void testGeneralCase() {
-        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>();
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>();
 
         //Add occurrences to list
         occurrences.append(getOccurrencesWithLineNumbers(new Integer[]{1, 4, 7, 8, 9, 11, 10, 13}));

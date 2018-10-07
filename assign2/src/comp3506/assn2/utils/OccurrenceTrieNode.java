@@ -16,7 +16,7 @@ public class OccurrenceTrieNode {
     private ArrayList<OccurrenceTrieNode> children;
     private OccurrenceTrieNode parent;
 
-	private ArrayList<Pair<Integer, Integer>> occurrences;
+	private ArrayList<HashPair<Integer, Integer>> occurrences;
 	private ArrayList<Integer> sectionNumbers;
 
 	private HashSet<Integer> sectionSet;
@@ -74,10 +74,10 @@ public class OccurrenceTrieNode {
      * Returns all occurrences of the word terminated by this OccurrenceTrieNode
      *
      * @return
-     *      A list of occurrences of this word as Pairs of line number and
+     *      A list of occurrences of this word as HashPairs of line number and
      *      initial column number
      */
-    public ArrayList<Pair<Integer, Integer>> getOccurrences() {
+    public ArrayList<HashPair<Integer, Integer>> getOccurrences() {
         return this.occurrences;
     }
 
@@ -109,7 +109,7 @@ public class OccurrenceTrieNode {
      * @param sectionNumber
      *      The sectionNumber the word terminated by this node occured in
      */
-	public void addOccurrence(Pair<Integer, Integer> occurrence, Integer sectionNumber) {
+	public void addOccurrence(HashPair<Integer, Integer> occurrence, Integer sectionNumber) {
 	    if(occurrence != null) {
             this.setIsWord(true);
             this.occurrences.append(occurrence);
