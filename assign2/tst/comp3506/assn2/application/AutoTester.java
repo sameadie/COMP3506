@@ -22,21 +22,21 @@ import java.util.List;
 public class AutoTester implements Search {
 
     //Trie storing occurrences of all words in text for fast retrieval
-    private OccurrenceTrie documentTrie;
+    private OccurrenceTrie documentTrie = new OccurrenceTrie();
 
-    //Store section titles in HashMap for fast access, value stores Pair<sectionNumber, sectionStartLineNumber>
-    private HashMap<String, Pair<Integer, Integer>> sectionIndexes;
+    //Store section titles in HashMap for fast access, value stores HashPair<sectionNumber, sectionStartLineNumber>
+    private HashMap<String, HashPair<Integer, Integer>> sectionIndexes = new HashMap<>();
 
     //Stores starting line of sections in order, used for creation of documentTrie
-    private ArrayList<Integer> sectionStarts;
+    private ArrayList<Integer> sectionStarts = new ArrayList<>();
 
     //Stores stop words for fast access
-    private HashSet<String> stopWords;
+    private HashSet<String> stopWords = new HashSet<>();
 
     //Stores text for fast retrieval - would actually be stored on disc with reference in main memory
-    private HashMap<Integer, String> textLines;
+    private HashMap<Integer, String> textLines = new HashMap<>();
 
-    //TODO: handle no indexfile or stop words file cases
+
     /**
      * Create an object that performs search operations on a document.
      * If indexFileName or stopWordsFileName are null or an empty string the document should be loaded
@@ -57,20 +57,44 @@ public class AutoTester implements Search {
         if ((documentFileName == null) || (documentFileName.length() == 0)) {
             throw new IllegalArgumentException("Invalid document filename");
         }
-        //TODO: Error handling
+
         try {
             readTextLines(documentFileName);
-            readSectionIndexes(indexFileName);
-            formTrieFromFile("files/" + documentFileName);
-            readStopWords(stopWordsFileName);
+        } catch (IOException e ) {
+            System.err.println("IO Exception with reading text lines");
+        }
+
+        try {
+            if ((indexFileName == null) || (indexFileName.length() == 0)) {
+                this.sectionStarts.append(1);
+            } else {
+                readSectionIndexes(indexFileName);
+            }
+        } catch (IOException e ) {
+            System.err.println("IO Exception with IndexFileName");
+        }
+
+        try {
+            formTrieFromFile(documentFileName);
+        } catch (IOException e ) {
+            System.err.println("IO exception with reading text lines");
+        }
+
+        try {
+            if((stopWordsFileName == null) || (stopWordsFileName.length() == 0)) {
+                this.stopWords = new HashSet<>();
+            } else {
+                readStopWords(stopWordsFileName);
+            }
         } catch (Exception e) {
-            System.err.println("IOException ");
+            System.err.println("IOException");
         }
     }
 
     private void readTextLines(String filename) throws IOException{
         //Create reader for document and remove byte order mark (first char)
-        BufferedReader documentReader = new BufferedReader(new FileReader("files/" + filename));
+        FileReader fReader = new FileReader(filename);
+        BufferedReader documentReader = new BufferedReader(fReader);
         documentReader.read();
 
         this.textLines = new HashMap<>();
@@ -85,7 +109,7 @@ public class AutoTester implements Search {
 
     private void readSectionIndexes(String indexFileName) throws IOException {
         //Create reader for index file and remove byte order mark (first char)
-        BufferedReader documentReader = new BufferedReader(new FileReader("files/" + indexFileName));
+        BufferedReader documentReader = new BufferedReader(new FileReader(indexFileName));
         documentReader.read();
 
         this.sectionIndexes = new HashMap<>();
@@ -93,7 +117,7 @@ public class AutoTester implements Search {
 
         String line, sectionTitle;
         String[] parts;
-        Integer sectionLineNumber, sectionNumber = 1;
+        Integer sectionLineNumber, sectionNumber = 0;
 
         //Read file until end
         while ((line = documentReader.readLine()) != null) {
@@ -103,7 +127,7 @@ public class AutoTester implements Search {
             sectionTitle = parts[0];
 
             this.sectionStarts.append(sectionLineNumber);
-            this.sectionIndexes.put(sectionTitle, new Pair<>(sectionNumber, sectionLineNumber));
+            this.sectionIndexes.put(sectionTitle, new HashPair<>(sectionNumber, sectionLineNumber));
 
             sectionNumber++;
         }
@@ -111,7 +135,7 @@ public class AutoTester implements Search {
 
     private void readStopWords(String stopWordsFileName) throws IOException {
         //Create reader for stop words file and remove byte order mark (first char)
-        BufferedReader documentReader = new BufferedReader(new FileReader("files/" + stopWordsFileName));
+        BufferedReader documentReader = new BufferedReader(new FileReader(stopWordsFileName));
         documentReader.read();
 
         String line;
@@ -124,7 +148,7 @@ public class AutoTester implements Search {
 
     public void formTrieFromFile(String filename) throws IOException {
         //Create reader for text and remove byte order mark (first char)
-        BufferedReader documentReader = new BufferedReader(new FileReader("files/" + filename));
+        BufferedReader documentReader = new BufferedReader(new FileReader(filename));
         documentReader.read();
 
         Integer sectionNumber = 0;
@@ -133,7 +157,7 @@ public class AutoTester implements Search {
         //Initialise Trie for creation
         this.documentTrie = new OccurrenceTrie();
         OccurrenceTrieNode reference;
-        Pair<Integer, Integer> occurrence;
+        HashPair<Integer, Integer> occurrence;
 
 
         String line;
@@ -141,7 +165,7 @@ public class AutoTester implements Search {
         while((line = documentReader.readLine()) != null) {
             line = line.toLowerCase();
             reference = documentTrie.getRoot(); //Start adding next word from root
-            occurrence = new Pair<>(lineNumber, 1); //First word occurs at start of line
+            occurrence = new HashPair<>(lineNumber, 1); //First word occurs at start of line
 
             for(int i = 0; i < line.length(); i++) {
                 //Ignore punctation that isn't apostrophes
@@ -156,7 +180,7 @@ public class AutoTester implements Search {
                     }
 
                     //Set occurrence position for next word
-                    occurrence = new Pair<>(lineNumber, i + 2); //Column number = i + 1: next word starts at i + 2
+                    occurrence = new HashPair<>(lineNumber, i + 2); //Column number = i + 1: next word starts at i + 2
                     reference = documentTrie.getRoot();
                     continue;
 
@@ -201,13 +225,23 @@ public class AutoTester implements Search {
             return 0;
         }
 
-        ArrayList<Pair<Integer, Integer>> occurrences = this.documentTrie.getOccurrences(word);
+        ArrayList<HashPair<Integer, Integer>> occurrences = this.documentTrie.getOccurrences(word);
 
         if(occurrences == null) {
             return 0;
         } else {
             return occurrences.size();
         }
+    }
+
+    private java.util.ArrayList<Pair<Integer, Integer>> dataTypeAdapter(ArrayList<HashPair<Integer, Integer>> list) {
+        java.util.ArrayList<Pair<Integer, Integer>> convertedList = new java.util.ArrayList<>(list.size());
+
+        for(int i = 0; i < list.size(); i++) {
+            convertedList.add(new Pair<>(list.get(i).getLeftValue(), list.get(i).getRightValue()));
+        }
+
+        return convertedList;
     }
 
     /**
@@ -225,21 +259,22 @@ public class AutoTester implements Search {
             throw new IllegalArgumentException("Invalid phrase");
         }
 
-        //Find occurrences of first word
-        ArrayList<Pair<Integer, Integer>> occurrences = this.documentTrie.getOccurrences(phrase.split(" ")[0]);
-
         //If search for word not phrase
         if(!phrase.contains(" ")) {
+            ArrayList<HashPair<Integer, Integer>> occurrences = this.documentTrie.getOccurrences(phrase);
             if (occurrences == null) {
                 return new java.util.ArrayList<>();
             } else {
-                return occurrences.toJavaArrayList();
+                return dataTypeAdapter(occurrences);
             }
         }
 
-        Pair<Integer, Integer> occurrence;
+        //Find occurrences of first word
+        ArrayList<HashPair<Integer, Integer>> occurrences = this.documentTrie.getOccurrences(phrase.split(" ")[0]);
 
-        ArrayList<Pair<Integer, Integer>> phraseOccurrences = new ArrayList<>();
+        HashPair<Integer, Integer> occurrence;
+
+        ArrayList<HashPair<Integer, Integer>> phraseOccurrences = new ArrayList<>();
 
         //Perform search starting at each occurrence of first word
         for(int i = 0; i < occurrences.size(); i++) {
@@ -249,10 +284,10 @@ public class AutoTester implements Search {
             }
         }
 
-        return phraseOccurrences.toJavaArrayList();
+        return dataTypeAdapter(phraseOccurrences);
     }
 
-    private boolean matchPatternFromOccurrence(Pair<Integer, Integer> occurrence, String phrase) {
+    private boolean matchPatternFromOccurrence(HashPair<Integer, Integer> occurrence, String phrase) {
         int lineNumber = occurrence.getLeftValue();
         int columnNumber = occurrence.getRightValue();
         int stringIndex = 0;
@@ -305,12 +340,12 @@ public class AutoTester implements Search {
             throw new IllegalArgumentException("Invalid prefix");
         }
 
-        ArrayList<Pair<Integer, Integer>> occurrences = this.documentTrie.getOccurrencesForSubtree(prefix);
+        ArrayList<HashPair<Integer, Integer>> occurrences = this.documentTrie.getOccurrencesForSubtree(prefix);
 
         if(occurrences == null) {
             return new java.util.ArrayList<>();
         } else {
-            return occurrences.toJavaArrayList();
+            return dataTypeAdapter(occurrences);
         }
     }
 
@@ -330,7 +365,7 @@ public class AutoTester implements Search {
             throw new IllegalArgumentException("Invalid search words");
         }
 
-        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>(words.length);
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>(words.length);
 
         //Get occurrences of every word
         for(int i = 0; i < words.length; i++) {
@@ -363,7 +398,7 @@ public class AutoTester implements Search {
             throw new IllegalArgumentException("Invalid search words");
         }
 
-        ArrayList<ArrayList<Pair<Integer, Integer>>> occurrences = new ArrayList<>(words.length);
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>(words.length);
 
         //Get occurrences for every word
         for(int i = 0; i < words.length; i++) {
@@ -396,7 +431,7 @@ public class AutoTester implements Search {
      */
     public List<Integer> wordsNotOnLine(String[] wordsRequired, String[] wordsExcluded)
             throws IllegalArgumentException {
-        ArrayList<ArrayList<Pair<Integer, Integer>>> requiredOccurrences = new ArrayList<>(wordsRequired.length);
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> requiredOccurrences = new ArrayList<>(wordsRequired.length);
 
         if((wordsRequired == null ) || (wordsExcluded == null) ||
                 (wordsRequired.length == 0) || (wordsExcluded.length == 0)) {
@@ -417,7 +452,7 @@ public class AutoTester implements Search {
         //Find interesection of occurrences
         ArrayList<Integer> intersection = Intersection.getIntersections(requiredOccurrences);
 
-        ArrayList<ArrayList<Pair<Integer, Integer>>> excludedOccurrences = new ArrayList<>(wordsExcluded.length);
+        ArrayList<ArrayList<HashPair<Integer, Integer>>> excludedOccurrences = new ArrayList<>(wordsExcluded.length);
         ArrayList<Integer> pointers = new ArrayList<>(wordsExcluded.length);
 
         int includedPointer = 0;
@@ -454,20 +489,19 @@ public class AutoTester implements Search {
         return intersection.toJavaArrayList();
     }
 
-
-    private Pair<Integer[], ArrayList<HashSet<Integer>>> setupSectionSearch(String[] titles, String[] words) {
+    private HashPair<Integer[], ArrayList<HashSet<Integer>>> setupSectionSearch(String[] titles, String[] words) {
 
         //The section numbers of the titles
         Integer[] sectionNumbers = new Integer[titles.length];
         for(int i = 0; i < titles.length; i++) {
             if((titles[i] == null) || (titles[i].length() == 0)) { throw new IllegalArgumentException("Invalid title");
             } else {
-                Pair<Integer, Integer> sectionPair = this.sectionIndexes.get(titles[i]);
+                HashPair<Integer, Integer> sectionHashPair = this.sectionIndexes.get(titles[i]);
                 //Section not in document - return empty list
-                if(sectionPair == null) {
+                if(sectionHashPair == null) {
                     return null;
                 }
-                sectionNumbers[i] = sectionPair.getLeftValue();
+                sectionNumbers[i] = sectionHashPair.getLeftValue();
             }
         }
 
@@ -488,14 +522,14 @@ public class AutoTester implements Search {
             }
         }
 
-        return new Pair<>(sectionNumbers, wordSections);
+        return new HashPair<>(sectionNumbers, wordSections);
     }
 
     private void addAllOccurrencesOfWordInSection(String word, Integer sectionNumber,
                                                   ArrayList<Triple<Integer, Integer, String>> occurrencesFound) {
 
         ArrayList<Integer> sectionNumbers = documentTrie.getSectionNumbers(word);
-        ArrayList<Pair<Integer, Integer>> occurrences = documentTrie.getOccurrences(word);
+        ArrayList<HashPair<Integer, Integer>> occurrences = documentTrie.getOccurrences(word);
 
         //Binary search to find index of an occurrence in section
         int sectionNumberIndex = sectionNumbers.binarySearch(Comparator.naturalOrder(), sectionNumber);
@@ -541,17 +575,17 @@ public class AutoTester implements Search {
         if((titles == null) || (titles.length == 0)) { throw new IllegalArgumentException("Invalid titles"); }
 
         ArrayList<Triple<Integer, Integer, String>> occurrencesFound = new ArrayList<>();
-        Pair<Integer[], ArrayList<HashSet<Integer>>> setupPair = setupSectionSearch(titles, words);
+        HashPair<Integer[], ArrayList<HashSet<Integer>>> setupHashPair = setupSectionSearch(titles, words);
 
         //Not all titles are in document
-        if(setupPair == null) {
+        if(setupHashPair == null) {
             return new java.util.ArrayList<>();
         }
 
         //The section numbers of the titles
-        Integer[] sectionNumbers = setupPair.getLeftValue();
+        Integer[] sectionNumbers = setupHashPair.getLeftValue();
         //An ArrayList of section numbers (Integers) each word in words occurs in
-        ArrayList<HashSet<Integer>> wordSections = setupPair.getRightValue();
+        ArrayList<HashSet<Integer>> wordSections = setupHashPair.getRightValue();
 
         for(int i = 0; i < titles.length; i++) {
             addOccurrencesAND(sectionNumbers[i], wordSections, words, occurrencesFound);
@@ -595,17 +629,17 @@ public class AutoTester implements Search {
         if((titles == null) || (titles.length == 0)) { throw new IllegalArgumentException("Invalid titles"); }
 
         ArrayList<Triple<Integer, Integer, String>> occurrencesFound = new ArrayList<>();
-        Pair<Integer[], ArrayList<HashSet<Integer>>> setupPair = setupSectionSearch(titles, words);
+        HashPair<Integer[], ArrayList<HashSet<Integer>>> setupHashPair = setupSectionSearch(titles, words);
 
         //Not all titles are in document
-        if(setupPair == null) {
+        if(setupHashPair == null) {
             return new java.util.ArrayList<>();
         }
 
         //The section numbers of the titles
-        Integer[] sectionNumbers = setupPair.getLeftValue();
+        Integer[] sectionNumbers = setupHashPair.getLeftValue();
         //An ArrayList of section numbers (Integers) each word in words occurs in
-        ArrayList<HashSet<Integer>> wordSections = setupPair.getRightValue();
+        ArrayList<HashSet<Integer>> wordSections = setupHashPair.getRightValue();
 
         for(int i = 0; i < titles.length; i++) {
             addOccurrencesOR(sectionNumbers[i], wordSections, words, occurrencesFound);
@@ -648,17 +682,17 @@ public class AutoTester implements Search {
         if((titles == null) || (titles.length == 0)) { throw new IllegalArgumentException("Invalid titles"); }
 
         ArrayList<Triple<Integer, Integer, String>> occurrencesFound = new ArrayList<>();
-        Pair<Integer[], ArrayList<HashSet<Integer>>> setupPair = setupSectionSearch(titles, wordsRequired);
+        HashPair<Integer[], ArrayList<HashSet<Integer>>> setupHashPair = setupSectionSearch(titles, wordsRequired);
 
         //Not all titles are in document
-        if(setupPair == null) {
+        if(setupHashPair == null) {
             return new java.util.ArrayList<>();
         }
 
         //The section numbers of the titles
-        Integer[] sectionNumbers = setupPair.getLeftValue();
+        Integer[] sectionNumbers = setupHashPair.getLeftValue();
         //An ArrayList of section numbers (Integers) each word in words occurs in
-        ArrayList<HashSet<Integer>> wordsRequiredSections = setupPair.getRightValue();
+        ArrayList<HashSet<Integer>> wordsRequiredSections = setupHashPair.getRightValue();
 
         ArrayList<HashSet<Integer>> wordsExcludedSections = new ArrayList<>(wordsExcluded.length);
         //Get sections of excluded words
@@ -731,17 +765,17 @@ public class AutoTester implements Search {
         if((titles == null) || (titles.length == 0)) { throw new IllegalArgumentException("Invalid titles"); }
 
         ArrayList<Triple<Integer, Integer, String>> occurrencesFound = new ArrayList<>();
-        Pair<Integer[], ArrayList<HashSet<Integer>>> setupPair = setupSectionSearch(titles, wordsRequired);
+        HashPair<Integer[], ArrayList<HashSet<Integer>>> setupHashPair = setupSectionSearch(titles, wordsRequired);
 
         //Not all titles are in document
-        if(setupPair == null) {
+        if(setupHashPair == null) {
             return new java.util.ArrayList<>();
         }
 
         //The section numbers of the titles
-        Integer[] sectionNumbers = setupPair.getLeftValue();
+        Integer[] sectionNumbers = setupHashPair.getLeftValue();
         //An ArrayList of section numbers (Integers) each word in words occurs in
-        ArrayList<HashSet<Integer>> wordsRequiredSections = setupPair.getRightValue();
+        ArrayList<HashSet<Integer>> wordsRequiredSections = setupHashPair.getRightValue();
 
         ArrayList<HashSet<Integer>> orWordsSections = new ArrayList<>(orWords.length);
         for(int i = 0; i < orWords.length; i++) {
