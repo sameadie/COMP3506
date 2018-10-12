@@ -21,6 +21,9 @@ public class ArrayList <E> {
     /**
      * Initialises an ArrayList with specific initial size
      *
+     * @bigO
+     *      O(1): Initialisation runs in O(1)
+     *
      * @param initialSize
      *      The initial capacity of the ArrayList
      */
@@ -32,6 +35,9 @@ public class ArrayList <E> {
 
     /**
      * Initialises an ArrayList with default initial capacity
+     *
+     * @bigO
+     *      O(1): runs O(1) time function
      */
     public ArrayList() {
         this(DEFAULT_START_SIZE);
@@ -40,6 +46,8 @@ public class ArrayList <E> {
     /**
      * Returns the number of elements in the array
      *
+     * @bigO
+     *      O(1)
      * @return
      *      The number of elements in the array
      */
@@ -47,6 +55,9 @@ public class ArrayList <E> {
 
     /**
      * Returns the element at the specified position in the ArrayList
+     *
+     * @bigO
+     *      O(1): array provides constant time access
      *
      * @param i
      *      The index of the element to get from the list
@@ -62,6 +73,9 @@ public class ArrayList <E> {
      * Sets the value of the element at the specified position. If no element exists at the
      * specified position, the ArrayList is unchanged
      *
+     * @bigO
+     *      O(1): array provides constant time set
+     *
      * @param index
      *      The index in the list to update
      * @param element
@@ -76,6 +90,9 @@ public class ArrayList <E> {
     /**
      * Appends the specified element to the end of the list
      *
+     * @bigO
+     *      O(1): constant time set with amortised O(1) time resizing 
+     * 
      * @param element
      *      The element to append to the list
      */
@@ -91,6 +108,8 @@ public class ArrayList <E> {
     /**
      * Appends all elements in other to this list
      *
+     * @bigO
+     *      O(N): performs O(1) function for every element in other
      * @param other
      *      An ArrayList of elements to extend this list with
      */
@@ -106,6 +125,9 @@ public class ArrayList <E> {
      * If index is greater than the number of elements in the list,
      * the element is appended to the list
      *
+     * @bigO
+     *      O(N): must shift elements to make room for insertion
+     *  
      * @param index
      *      The index to insert the element at
      * @param element
@@ -137,6 +159,9 @@ public class ArrayList <E> {
      * Removes and returns the element at the specified position, else
      * returns null if index out of range
      *
+     * @bigO
+     *      O(N): must shift elements back to fill gap 
+     * 
      * @param index
      *      The index of the element to remove from the list
      *
@@ -164,7 +189,10 @@ public class ArrayList <E> {
      * Attempts to remove the specified element from the list.
      * Returns true iff successful, else false
      *
-     *
+     * @bigO
+     *      O(N): iterates through list checking each element, may perform O(N) function once
+     *      *assuming constant time comparison for stored data type
+     * 
      * @param element
      *      The element to remove from the lust
      *
@@ -184,6 +212,10 @@ public class ArrayList <E> {
     /**
      * Returns true iff the list contains the specified element, else false
      *
+     * @bigO
+     *      O(N): checks each element in list
+     *      **assuming constant time comparison for stored data type
+     * 
      * @param element
      *      The queried element
      * @return
@@ -201,6 +233,9 @@ public class ArrayList <E> {
     /**
      * Returns an array containing the elements in this list
      *
+     * @bigO
+     *      O(1): keeps reference to array 
+     *      
      * @return
      *      An array of the elements in the list
      */
@@ -210,7 +245,10 @@ public class ArrayList <E> {
 
     /**
      * Increases the capacity of the list by the specified factor
-     *
+     * 
+     * @bigO
+     *      O(N): copies 
+     * 
      * @param factor
      *      The specified increase in capacity
      */
@@ -223,6 +261,9 @@ public class ArrayList <E> {
 
     /**
      * Returns a java.util.ArrayList containing the elements in this list.
+     *
+     * @bigO
+     *      O(N): adds all N elements to java.util.ArrayList
      *
      * @return
      *      A java.util.ArrayList containing all elements in this list
@@ -239,6 +280,10 @@ public class ArrayList <E> {
     /**
      * Returns the index of the specified value, else returns -1.
      * This method assumes the array is sorted
+     *
+     * @bigO
+     *      O(log(N)): search area is halved each iteration
+     *      **assuming constant time comparison
      *
      * @param comparator
      *      The comparator used to compare values in the list
@@ -272,6 +317,9 @@ public class ArrayList <E> {
 
     /**
      * Returns a string representation of the list
+     *
+     * @bigO
+     *      O(N): must access all elements in array
      *
      * @return
      *      A string representation of the list

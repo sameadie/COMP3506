@@ -18,7 +18,10 @@ public class OccurrenceTrie {
 
     /**
      * Constructor for specifying initial root node children capacity
-     * 
+     *
+     * @bigO
+     *      O(1): value assignment in constant time
+     *
      * @param initialChildrenSpaces
      *      Initial root node children capacity
      */
@@ -30,6 +33,9 @@ public class OccurrenceTrie {
 
     /**
      * Basic constructor using default children capacity
+     *
+     * @bigO
+     *      O(1): calls constant time function
      */
 	public OccurrenceTrie() {
 	    this(INITAL_CHILDREN_SPACES);
@@ -37,6 +43,9 @@ public class OccurrenceTrie {
 
     /**
      * Returns the root of the Trie
+     *
+     * @bigO
+     *      O(1): returns stored reference in constant time
      *
      * @return
      *      The OccurrenceTrieNode at the root of the tree
@@ -48,6 +57,13 @@ public class OccurrenceTrie {
     /**
      * Returns the longest prefix of the specified word in the trie and the
      * length of this prefix
+     *
+     * @bigO
+     *      O(numChildren * word.length()): traverses down trie at most word.length() number
+     *      of times. Getting children runs in O(numChildren) each time, O(numChildren) is essentially
+     *      constant O(27) but can be improved. Essentially O(word.length())
+     *
+     *
      * @param word
      *      the word to attempt to find in the try
      * @return
@@ -80,6 +96,10 @@ public class OccurrenceTrie {
      * Returns the OccurencesTrieNode that terminates the specified word. Returns
      * null if the word is not in the trie
      *
+     * @bigO
+     *      O(word.length()): calls O(word.length()) function and performs
+     *      constant time integer comparison
+     *
      * @param word
      *      The word to traverse the tree for
      *
@@ -99,6 +119,10 @@ public class OccurrenceTrie {
     /**
      * Returns the occurrences of the specified word. Returns null if word not in trie
      *
+     * @bigO
+     *      O(word.length()): calls O(word.length()) function and performs constant time
+     *      comparison
+     *
      * @param word
      *      The word being queried for occurrences
      * @return
@@ -116,6 +140,10 @@ public class OccurrenceTrie {
 
     /**
      * Returns the sections that the word occurs in
+     *
+     * @bigO
+     *      O(word.length()): calls O(word.length()) function and performs constant time
+     *      comparison
      *
      * @param word
      *      The query word
@@ -152,6 +180,17 @@ public class OccurrenceTrie {
     /**
      * Returns all occurrences of the given prefix
      *
+     * @bigO
+     *      O((numOccurrencesPerNode + 1)x (27 ^ heightRoot)):
+     *
+     *      O(numChildrenInSubtree*(numOccurrences + 1)) because .extend() is called on every child in
+     *      subtree and this calls .append() numOccurrences times and runs in O(1). Nodes are visited in
+     *      constant time and numChildrenInSubtree nodes are visited hence the +1 in the brackets
+     *
+     *      numChildrenInSubtree = childrenPerParent ^ longestSuffix = 27 ^ heightRoot
+     *
+     *      Combining these give: O((numOccurrencesPerNode + 1)x (27 ^ heightRoot))
+     *
      * @param prefix
      *      The prefix to query for occurrences
      * @return
@@ -165,7 +204,7 @@ public class OccurrenceTrie {
             return null;
         }
 
-        ArrayList<HashPair<Integer, Integer>> occurrences = new ArrayList<HashPair< Integer, Integer>>();
+        ArrayList<HashPair<Integer, Integer>> occurrences = new ArrayList<>();
 
         //Traverse subtree rooted at longestPrefix's node - accumulate occurrences
         getOccurrencesRecursiveHelper(subtreeRoot, occurrences);
@@ -176,6 +215,11 @@ public class OccurrenceTrie {
     /**
      * Adds an occurrence to the node terminating the specified word, creating
      * branches as required
+     *
+     * @bigO:
+     *      O(word.length()): calls O(word.length()) function. Will add nodes and traverse until
+     *      word.length() if not performed by getLongestPrefixNode therefore this runs in O(word.length()).
+     *      Adding occurrences to node occurs in O(1)
      *
      * @param word
      *      The word to add an occurrence to

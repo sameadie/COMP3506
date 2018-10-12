@@ -16,13 +16,18 @@ public class OccurrenceTrieNode {
     private ArrayList<OccurrenceTrieNode> children;
     private OccurrenceTrieNode parent;
 
+    //Occurrences of the word terminating at this node in the form HashPair<lineNumber, columnNumber>
 	private ArrayList<HashPair<Integer, Integer>> occurrences;
-	private ArrayList<Integer> sectionNumbers;
 
+	//Section numbers occurences of this word occur in
+	private ArrayList<Integer> sectionNumbers;
 	private HashSet<Integer> sectionSet;
 
     /**
      * Constructor for OccurrenceTrieNode
+     *
+     * @bigO
+     *      O(1): constant time initialisation
      *
      * @param value
      *      char stored in this node
@@ -44,6 +49,9 @@ public class OccurrenceTrieNode {
     /**
      * Basic constructor for OccurrenceTrieNode using default initial array size
      *
+     * @bigO
+     *      O(1): calls constant time function
+     *
      * @param value
      *      char stored in this node
      * @param isWord
@@ -55,6 +63,10 @@ public class OccurrenceTrieNode {
 
     /**
      * Empty constructor for OccurrenceTrieNode, uses null value and default initial array size
+     *
+     * @bigO
+     *      O(1): calls constant time function
+     *
      */
     public OccurrenceTrieNode() {
 	    this((char)(0), null, false);
@@ -62,6 +74,9 @@ public class OccurrenceTrieNode {
 
     /**
      * Returns the value stored at this node
+     *
+     * @bigO
+     *      O(1): constant time access to variable reference
      *
      * @return
      *      The value stored at this node
@@ -72,6 +87,9 @@ public class OccurrenceTrieNode {
 
     /**
      * Returns all occurrences of the word terminated by this OccurrenceTrieNode
+     *
+     * @bigO
+     *      O(1): constant time access to variable reference
      *
      * @return
      *      A list of occurrences of this word as HashPairs of line number and
@@ -84,6 +102,9 @@ public class OccurrenceTrieNode {
     /**
      * Returns a HashSet of all sections the word terminating in this node occurs at
      *
+     * @bigO
+     *      O(1): constant time access to variable reference
+     *
      * @return
      *      A HashSet of all sections this word occurs in
      *
@@ -94,6 +115,9 @@ public class OccurrenceTrieNode {
      * Returns an ArrayList of section numbers with corresponding indices to the
      * occurences of this node
      *
+     * @bigO
+     *      O(1): constant time access to variable reference
+     *
      * @return
      *      A list of section numbers the occurrences of this node occur in
      */
@@ -103,6 +127,9 @@ public class OccurrenceTrieNode {
 
     /**
      * Adds an occurence to the node
+     *
+     * @bigO
+     *      O(1): ArrayList append and HashSet put occur in constant time
      *
      * @param occurrence
      *      A lineNumber, columnNumber pair denoting the occurrence
@@ -121,6 +148,9 @@ public class OccurrenceTrieNode {
     /**
      * Returns the parent of this node
      *
+     * @bigO
+     *      O(1): returns stored reference in constant time
+     *
      * @return
      *      the node' parent
      */
@@ -128,6 +158,12 @@ public class OccurrenceTrieNode {
 
     /**
      * Returns the child of this node with the specified letter
+     *
+     * @bigO
+     *      O(numChildren): searches children for letter, .getValue() runs in O(1)
+     *      likewise character comparison is constant time. Could be implemented using
+     *      the HashMap but maximum numChildren is 27 (alphabet + ') so linear runtime i
+     *      sn't too bad here
      *
      * @param letter
      *      The value of the child node
@@ -146,6 +182,9 @@ public class OccurrenceTrieNode {
     /**
      * Returns the children of this node
      *
+     * @bigO
+     *      O(1): returns stored reference in constant time
+     *
      * @return
      *      An array of children OccurrenceTrieNodes
      */
@@ -153,6 +192,9 @@ public class OccurrenceTrieNode {
 
     /**
      * Returns if this node marks the end of a valid word
+     *
+     * @bigO
+     *      O(1): returns stored reference in constant time
      *
      * @return
      *      whether this node marks the end of a valid word
@@ -162,6 +204,9 @@ public class OccurrenceTrieNode {
     /**
      * Sets whether this node marks the end of a valid word
      *
+     * @bigO
+     *      O(1): constant time value assignment
+     *
      * @param isWord
      *      whether this node marks the end of a valid word
      *
@@ -169,7 +214,14 @@ public class OccurrenceTrieNode {
     public void setIsWord(boolean isWord) { this.isWord = isWord; }
 
     /**
-     * Adds the value as a child of this OccurrenceTrieNode if not already.
+     * Adds the value as a child of this OccurrenceTrieNode if not already and
+     * returns the child node who's letter is the specified value
+     *
+     * @bigO
+     *      O(numChildren): checks all children for letter corresponding to
+     *      specified value. Array access and append run in O(1). Could be
+     *      implemented in a HashMap to improve search time but numChildren
+     *      is confined to 27 (alphabet + ') so not too important
      *
      * @param value
      *      The value of the child node

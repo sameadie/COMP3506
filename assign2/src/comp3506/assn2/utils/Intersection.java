@@ -9,6 +9,9 @@ public class Intersection {
     /**
      * Helper method to determine if all pointers point to the end of their respective arrays
      *
+     * @bigO
+     *      O(numPointers): checks all pointers for completion
+     *
      * @param occurrences
      *      The arrays being traversed
      * @param pointers
@@ -26,8 +29,13 @@ public class Intersection {
     }
 
     /**
-     * Returns the intersection (AND) of the line numbers of the specified occurences. Assmumes that the
-     * ArrayLists in occurences are sorted in ascending order
+     * Returns the intersection (AND) of the line numbers of the specified occurences. Assmumes that all
+     * ArrayLists in occurences are sorted in ascending order.
+     *
+     * Simultaneously traverses all arrays in ascending order incrementing minimum value, checking for intersections
+     *
+     * @bigO
+     *      O(sum(N)): runs in time linear to sum of all elements, since arrays are sorted each array is traversed only once
      *
      * @param occurrences
      *      An ArrayList of ArrayLists of lineNumber, columnNumber pairs to calculate the intersection of
@@ -149,6 +157,11 @@ public class Intersection {
      * Returns the union (OR) of the line numbers of the specified occurrences. Assumes that the
      * ArrayLists in occurrences are sorted in ascending order
      *
+     * Simultaneously traverses all arrays in ascending order incrementing minimum value, checking for unions
+     *
+     * @bigO
+     *      O(sum(N)): runs in time linear to sum of all elements, since arrays are sorted each array is traversed only once
+     *
      * @param occurrences
      *      An ArrayList of ArrayLists of lineNumber, columnNumber pairs to calculate the union of
      *
@@ -225,6 +238,19 @@ public class Intersection {
         return unions;
     }
 
+    /**
+     * Returns the lineNumbers in occurrences not in notOccurrences. Assumes that the elements in occurrences are in
+     * ascending order and the lineNumbers in notOccurrences are in ascending order
+     *
+     * Traverses occurrences while simultaneously traversing all arrays in notOccurrences, removing common values
+     *
+     * @bigO
+     *      O(sum(N)): runs in time linear to sum of all elements, since arrays are sorted each array is traversed only once
+     *
+     * @param occurrences
+     * @param notOccurrences
+     * @return
+     */
     public static ArrayList<Integer> getNot(ArrayList<Integer> occurrences, ArrayList<ArrayList<HashPair<Integer, Integer>>> notOccurrences) {
 
         System.out.println("From these:");

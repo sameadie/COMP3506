@@ -1,7 +1,7 @@
 package comp3506.assn2.utils;
 
 /**
- * A set implementation using a HashMap
+ * A set implementation backed by a HashMap
  *
  * @param <E>
  *      The type of elements stored in the set
@@ -15,6 +15,9 @@ public class HashSet<E> {
     /**
      * Initialises an empty HashSet of specified initial capacity
      *
+     * @bigO
+     *      O(1): constant time initialisation
+     *
      * @param initialSize
      *      The initial capacity of the HashSet
      */
@@ -24,6 +27,9 @@ public class HashSet<E> {
 
     /**
      * Initialises an empty HashSet with default initial size
+     *
+     * @bigO
+     *      O(1): constant time initialisation
      */
     public HashSet() {
         hashMap = new HashMap();
@@ -32,14 +38,22 @@ public class HashSet<E> {
     /**
      * Returns the number of elements in the set
      *
+     *
+     * @bigO
+     *      O(1): calls constant time function
+     *
      * @return
      *      The number of elements in the set
      */
     public int getSize() {
         return this.hashMap.getSize();
     }
+
     /**
      * Adds the specified element to the set
+     *
+     * @bigO
+     *      O(1) average case, O(N) worst case, calls HashMap.put
      *
      * @param element
      *      The element to add to the set
@@ -51,6 +65,9 @@ public class HashSet<E> {
     /**
      * Removes the specified element from the set
      *
+     * @bigO
+     *     O(1) average case, O(N) worst case, calls HashMap.remove
+     *
      * @param element
      *      The element to remove from the set
      */
@@ -60,6 +77,9 @@ public class HashSet<E> {
 
     /**
      * Returns true iff the set contains the specified element, else false
+     *
+     * @bigO
+     *      O(1) average case, O(N) worst case, calls HashMap.get
      *
      * @param element
      *      The element to query existence in the set

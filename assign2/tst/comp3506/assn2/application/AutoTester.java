@@ -91,6 +91,21 @@ public class AutoTester implements Search {
         }
     }
 
+    /**
+     * Reads the file's lines into a HashMap
+     *
+     * @bigO
+     *      O(numChars + numLines): iterates through every character in the document
+     *      and performs constant time comparison against \n to split into lines and
+     *      adds line to HashMap (constant time add) for each numLines. This would
+     *      actually be stored on list with reference to lines stored in main memory
+     *
+     * @param filename
+     *      the document's filename
+     *
+     * @throws IOException
+     *      If the file cannot be read
+     */
     private void readTextLines(String filename) throws IOException{
         //Create reader for document
         FileReader fReader = new FileReader(filename);
@@ -106,6 +121,22 @@ public class AutoTester implements Search {
         }
     }
 
+    /**
+     * Reads in the section names and start lines into a
+     * HashMap<sectionName, Pair<sectionNumber, sectionStartLineNumber>> and an
+     * ArrayList<sectionLineNumber>
+     *
+     * @bigO
+     *      O(numChars + numLines): iterates through every character in the document
+     *      and performs constant time comparison against \n to split into lines and
+     *      adds line to HashMap and ArrayList (constant time add) for each numLines.
+     *
+     * @param indexFileName
+     *      The filename of the document to read sections from
+     *
+     * @throws IOException
+     *      If the file cannot be read
+     */
     private void readSectionIndexes(String indexFileName) throws IOException {
         //Create reader for index file
         BufferedReader documentReader = new BufferedReader(new FileReader(indexFileName));
@@ -127,12 +158,24 @@ public class AutoTester implements Search {
             this.sectionStarts.append(sectionLineNumber);
             this.sectionIndexes.put(sectionTitle, new HashPair<>(sectionNumber, sectionLineNumber));
 
-            //System.out.println(String.format("%d: %s", sectionNumber, sectionTitle));
-
             sectionNumber++;
         }
     }
 
+    /**
+     * Reads all words from stopWordsFilename into a HashSet
+     *
+     * @bigO
+     *      O(numChars + numLines): iterates through every character in the document
+     *      and performs constant time comparison against \n to split into lines and
+     *      adds line to HashSet (constant time add) for each numLines.
+     *
+     * @param stopWordsFileName
+     *      The filename of the document storing stop words for this search application
+     *
+     * @throws IOException
+     *      If the file cannot be read
+     */
     private void readStopWords(String stopWordsFileName) throws IOException {
         //Create reader for stop words file
         BufferedReader documentReader = new BufferedReader(new FileReader(stopWordsFileName));
@@ -145,6 +188,28 @@ public class AutoTester implements Search {
         }
     }
 
+    /**
+     * Forms an OccurrenceTrie storing occurrences of all words in the document with
+     * specified filename
+     *
+     * @bigO
+     *      O(numChars + numWords + numLines):
+     *
+     *      O(numChars) = it iterates through every character in the document and performs constant time
+     *          comparison against \n to split into lines. Adds or traverses down trie for every character in
+     *          the document which is at most O(27) each, hence O(numChars). Even though it traverses each line
+     *          twice (first to split into new line, then to actually process line and add words to trie) it is
+     *          still O(numChars) time
+     *      O(numWords) = adds occurrence to each word, performs O(1) operation numWords times
+     *      O(numLines) = must check if we're in a new section after each line, performs O(1) operation numLines
+     *          number of times
+     *
+     * @param filename
+     *      The filename of the document to read words and occurences into a trie
+     *
+     * @throws IOException
+     *      If the file cannot be read
+     */
     public void formTrieFromFile(String filename) throws IOException {
         //Create reader for text
         BufferedReader documentReader = new BufferedReader(new FileReader(filename));
@@ -214,6 +279,10 @@ public class AutoTester implements Search {
     /**
      * Determines the number of times the word appears in the document.
      *
+     * @bigO
+     *      O(word.length()): calls a O(word.length()) function, performs constant
+     *      time comparison and calls constant time function
+     *
      * @param word The word to be counted in the document.
      * @return The number of occurrences of the word in the document.
      * @throws IllegalArgumentException if word is null or an empty String.
@@ -232,19 +301,16 @@ public class AutoTester implements Search {
         }
     }
 
-    private java.util.ArrayList<Pair<Integer, Integer>> dataTypeAdapter(ArrayList<HashPair<Integer, Integer>> list) {
-        java.util.ArrayList<Pair<Integer, Integer>> convertedList = new java.util.ArrayList<>(list.size());
-
-        for(int i = 0; i < list.size(); i++) {
-            convertedList.add(new Pair<>(list.get(i).getLeftValue(), list.get(i).getRightValue()));
-        }
-
-        return convertedList;
-    }
-
     /**
      * Finds all occurrences of the phrase in the document.
      * A phrase may be a single word or a sequence of words.
+     *
+     * @bigO
+     *      O(firstWord.length() + firstWord.numOccurrences * phrase.length):
+     *          O(firstWord.length()): traverses phrase to find a ' ' performing constant comparison operation
+     *              on each character to split first word then traverses trie firstWordLength number of times
+     *          O(firstWord.numOccurrences * phrase.length): Runs O(phrase.length) function for each occurrence
+     *              of the first word in the phrase
      *
      * @param phrase The phrase to be found in the document.
      * @return List of pairs, where each pair indicates the line and column number of each occurrence of the phrase.
@@ -271,7 +337,6 @@ public class AutoTester implements Search {
         ArrayList<HashPair<Integer, Integer>> occurrences = this.documentTrie.getOccurrences(phrase.split(" ")[0]);
 
         HashPair<Integer, Integer> occurrence;
-
         ArrayList<HashPair<Integer, Integer>> phraseOccurrences = new ArrayList<>();
 
         //Perform search starting at each occurrence of first word
@@ -285,6 +350,22 @@ public class AutoTester implements Search {
         return dataTypeAdapter(phraseOccurrences);
     }
 
+    /**
+     * Private helper method to match phrase to text beginning at occurrence
+     *
+     * @bigO
+     *      O(phrase.length()): iterates through each letter in phrase comparing it
+     *      to character in text until mismatch or all letters traversed. HashMap accesses
+     *      and character comparisons are O(1)
+     *
+     * @param occurrence
+     *      <lineNumber, columnNumbebr> to start searching document from
+     * @param phrase
+     *      the phrase to search for
+     *
+     * @return
+     *      Iff the phrase occurs at the specified occurence in the text
+     */
     private boolean matchPatternFromOccurrence(HashPair<Integer, Integer> occurrence, String phrase) {
         int lineNumber = occurrence.getLeftValue();
         int columnNumber = occurrence.getRightValue();
@@ -328,6 +409,11 @@ public class AutoTester implements Search {
      * A prefix is the start of a word. It can also be the complete word.
      * For example, "obscure" would be a prefix for "obscure", "obscured", "obscures" and "obscurely".
      *
+     * @bigO:
+     *      O((numOccurrencesPerNode + 1)x (27 ^ heightRoot)): calls
+     *          O((numOccurrencesPerNode + 1)x (27 ^ heightRoot)) function and performs constant
+     *          time comparison
+     *
      * @param prefix The prefix of a word that is to be found in the document.
      * @return List of pairs, where each pair indicates the line and column number of each occurrence of the prefix.
      *         Returns an empty list if the prefix is not found in the document.
@@ -351,6 +437,12 @@ public class AutoTester implements Search {
      * Searches the document for lines that contain all the words in the 'words' parameter.
      * Implements simple "and" logic when searching for the words.
      * The words do not need to be contiguous on the line.
+     *
+     * @bigO:
+     *      O(numWords * (wordLength + 1) + sum(occurrences)):
+     *          O(numWords * (wordLength) + 1): getOccurrences runs in O(wordLength),
+     *              ArrayList.append and HashSet.contains run in O(1), and this occurs numWords times
+     *          O(sum(occurrences)): finding intersection calls O(sum(occurrences)) function
      *
      * @param words Array of words to find on a single line in the document.
      * @return List of line numbers on which all the words appear in the document.
@@ -384,6 +476,11 @@ public class AutoTester implements Search {
      * Searches the document for lines that contain any of the words in the 'words' parameter.
      * Implements simple "or" logic when searching for the words.
      * The words do not need to be contiguous on the line.
+     * @bigO:
+     *      O(numWords * (wordLength + 1) + sum(occurrences)):
+     *          O(numWords * (wordLength) + 1): getOccurrences runs in O(wordLength),
+     *              ArrayList.append and HashSet.contains run in O(1), and this occurs numWords times
+     *          O(sum(occurrences)): finding union calls O(sum(occurrences)) function
      *
      * @param words Array of words to find on a single line in the document.
      * @return List of line numbers on which any of the words appear in the document.
@@ -418,6 +515,14 @@ public class AutoTester implements Search {
      * and none of the words in the 'wordsExcluded' parameter.
      * Implements simple "not" logic when searching for the words.
      * The words do not need to be contiguous on the line.
+     *
+     * @bigO:
+     *      O(numWords * (wordLength + 1) + sum(occurrences)):
+     *
+     *          Breaking it down
+     *          O(numWords * (wordLength) + 1): getOccurrences runs in O(wordLength),
+     *              ArrayList.append and HashSet.contains run in O(1), and this occurs numWords times
+     *          O(sum(occurrences)): finding NOT calls O(sum(occurrences)) function
      *
      * @param wordsRequired Array of words to find on a single line in the document.
      * @param wordsExcluded Array of words that must not be on the same line as 'wordsRequired'.
@@ -467,6 +572,21 @@ public class AutoTester implements Search {
         return Intersection.getNot(intersection, excludedOccurrences).toJavaArrayList();
     }
 
+    /**
+     * Returns the section numbers corresponding to the specified titles and a HashSet for each word of the section
+     * numbers they occur in
+     *
+     * @bigO
+     *      O(numTitles + numWords)
+     *          O(numTitles): performs comparisons, HashMap access and array assignment (all O(1)) numTitles times
+     *          O(numWords): performs comparisons, HashSet contains, ArrayList appends (all O(1)) numWords times
+     *
+     * @param titles
+     *      An array of titles of sections in the document
+     * @param words
+     *      An array of words in the document
+     * @return
+     */
     private HashPair<Integer[], ArrayList<HashSet<Integer>>> setupSectionSearch(String[] titles, String[] words) {
 
         //The section numbers of the titles
@@ -477,7 +597,6 @@ public class AutoTester implements Search {
                 HashPair<Integer, Integer> sectionHashPair = this.sectionIndexes.get(titles[i].toLowerCase());
                 //Section not in document - return empty list
                 if(sectionHashPair == null) {
-                    System.out.println("About to return null for: "  + titles[i]);
                     return null;
                 }
                 sectionNumbers[i] = sectionHashPair.getLeftValue();
@@ -504,19 +623,55 @@ public class AutoTester implements Search {
         return new HashPair<>(sectionNumbers, wordSections);
     }
 
+    /**
+     * Integer comparator based on primitive value, used for binary search of section numbers
+     */
     private class IntegerComparator implements Comparator<Integer> {
+
+        /**
+         * Compares two integers based on value.
+         *
+         * @bigO
+         *      O(1): constant time calculation
+         *
+         * @param a
+         *      An Integer for comparison
+         * @param b
+         *      An Integer for comparison
+         * @return
+         *      Returns > 0 if a > b, 0 if a = b, and < 0 if a < b
+         */
         @Override
         public int compare(Integer a, Integer b) {
             return a - b;
         }
     }
 
+    /**
+     * Adds all occurrences of the specified word in the section to occurrencesFound
+     *
+     * @bigO
+     *      O(word.length() + log(numOccurrences) + numSectionOccurrences):
+     *
+     *          Breaking it down
+     *          O(word.length()): traverses documentTrie down word.length() nodes and returns sectionNumbers
+     *              and occurrences in O(1)
+     *          O(log(numOccurrences)): binary search of section numbers to find sectionNumber
+     *              (numSectionNumbers == numOccurrences)
+     *          O(numSectionOccurrences): traverse all occurrences in specified section and performs constant append
+     *
+     * @param word
+     *      The word to add occurrences of
+     * @param sectionNumber
+     *      The section number of occurrences to add
+     * @param occurrencesFound
+     *      The ArrayList to add <lineNumber, columnNumber, word> occurrences to
+     */
     private void addAllOccurrencesOfWordInSection(String word, Integer sectionNumber,
                                                   ArrayList<Triple<Integer, Integer, String>> occurrencesFound) {
 
         ArrayList<Integer> sectionNumbers = documentTrie.getSectionNumbers(word);
         ArrayList<HashPair<Integer, Integer>> occurrences = documentTrie.getOccurrences(word);
-        //System.out.println(String.format("%s: %s", word, occurrences.toJavaArrayList().toString()));
 
         //Binary search to find index of an occurrence in section
         int sectionNumberIndex = sectionNumbers.binarySearch(new IntegerComparator(), sectionNumber);
@@ -546,6 +701,15 @@ public class AutoTester implements Search {
      * Implements simple "and" logic when searching for the words.
      * The words do not need to be on the same lines.
      *
+     * @bigO
+     *      O(numTitles + numWords + numTitles*numWords(word.length() + log(numOccurrences) + numSectionOccurrences + 1))
+     *
+     *        Breaking it down
+     *        O(numTitles + numWords): calls setupSectionSearch which runs in O(numTitles + numWords)
+     *        O(numTitles*numWords(word.length() + log(numOccurrences) + numSectionOccurrences + 1)) : calls
+     *        addOccurrencesAND numTitles times, it runs in O(numWords(word.length() + log(numOccurrences) + numSectionOccurrences + 1))
+     *
+     *
      * @param titles Array of titles of the sections to search within,
      *               the entire document is searched if titles is null or an empty array.
      * @param words Array of words to find within a defined section in the document.
@@ -564,8 +728,6 @@ public class AutoTester implements Search {
         ArrayList<Triple<Integer, Integer, String>> occurrencesFound = new ArrayList<>();
         HashPair<Integer[], ArrayList<HashSet<Integer>>> setupHashPair = setupSectionSearch(titles, words);
 
-
-
         //Not all titles are in document
         if(setupHashPair == null) {
             return new java.util.ArrayList<>();
@@ -578,13 +740,34 @@ public class AutoTester implements Search {
         ArrayList<HashSet<Integer>> wordSections = setupHashPair.getRightValue();
 
         for(int i = 0; i < titles.length; i++) {
-            //System.out.println(sectionNumbers[i]);
             addOccurrencesAND(sectionNumbers[i], wordSections, words, occurrencesFound);
         }
 
         return occurrencesFound.toJavaArrayList();
     }
 
+    /**
+     * Adds all occurrences of words in the specified section to occurrencesFound iff they all
+     * occur in the section, otherwise does nothing.
+     *
+     * @bigO
+     *      O(numWords(word.length() + log(numOccurrences) + numSectionOccurrences + 1))
+     *
+     *          Breaking it down
+     *          O(numWords): calls HashSet contains O(1), numWords times
+     *          O(numWords*(word.length() + log(numOccurrences) + numSectionOccurrences)): calls
+     *              addAllOccurrencesOfWordInSection numWords times which runs in
+     *              O(word.length() + log(numOccurrences) + numSectionOccurrences)
+     *
+     * @param sectionNumber
+     *      The section number to add occurrences in
+     * @param wordSections
+     *      A HashSet for each word of the sections they occur in
+     * @param words
+     *      The words to possibly add their occurrences of
+     * @param occurrencesFound
+     *      An ArrayList of <lineNumber, columnNumber, word> to possibly add to
+     */
     private void addOccurrencesAND(Integer sectionNumber, ArrayList<HashSet<Integer>> wordSections,
                                    String[] words, ArrayList<Triple<Integer, Integer, String>> occurrencesFound) {
         for(int i = 0; i < wordSections.size(); i++) {
@@ -603,6 +786,15 @@ public class AutoTester implements Search {
      * Searches the document for sections that contain any of the words in the 'words' parameter.
      * Implements simple "or" logic when searching for the words.
      * The words do not need to be on the same lines.
+     *
+     * @bigO
+     *      O(numTitles + numWords + numTitles* numWords*(word.length() + log(numOccurrences) + numSectionOccurrences))
+     *
+     *          Breaking it down
+     *          O(numTitles + numWords): calls setupSectionSearch which runs in O(numTitles + numWords)
+     *          O(numTitles* numWords*(word.length() + log(numOccurrences) + numSectionOccurrences)):
+     *              calls addOccurrencesOr numTitles times which runs in
+     *              O(numWords*(word.length() + log(numOccurrences) + numSectionOccurrences))
      *
      * @param titles Array of titles of the sections to search within,
      *               the entire document is searched if titles is null or an empty array.
@@ -639,6 +831,25 @@ public class AutoTester implements Search {
         return occurrencesFound.toJavaArrayList();
     }
 
+
+    /**
+     * Adds all occurrences of words in the specified section to occurrencesFound iff one of them
+     * occurs in the section, otherwise does nothing.
+     *
+     * @bigO
+     *      O(numWords*(word.length() + log(numOccurrences) + numSectionOccurrences)):
+     *          calls addAllOccurrencesOfWordInSection numWords times and this runs in
+     *          O(word.length() + log(numOccurrences) + numSectionOccurrences)
+     *
+     * @param sectionNumber
+     *      The section number to add occurrences in
+     * @param wordSections
+     *      A HashSet for each word of the sections they occur in
+     * @param words
+     *      The words to possibly add their occurrences of
+     * @param occurrencesFound
+     *      An ArrayList of <lineNumber, columnNumber, word> to possibly add to
+     */
     private void addOccurrencesOR(Integer sectionNumber, ArrayList<HashSet<Integer>> wordSections,
                                   String[] words, ArrayList<Triple<Integer, Integer, String>> occurrencesFound) {
         for(int i = 0; i < wordSections.size(); i++) {
@@ -653,6 +864,17 @@ public class AutoTester implements Search {
      * and none of the words in the 'wordsExcluded' parameter.
      * Implements simple "not" logic when searching for the words.
      * The words do not need to be on the same lines.
+     *
+     * @bigO
+     *      O(numTitles + numWordsRequired + numWordsExcluded + numTitles*(numWordsExcluded +
+     *                          numWordsRequired * (word.length() + log(numOccurrences) + numSectionOccurrences + 1))):
+     *
+     *          Breaking it down
+     *          O(numTitles + numWordsRequired + numWordsExcluded): calls setupSectionSearch which runs
+     *              in O(numTitles + numWords) and performs constant HashSet contains query for each excluded word
+     *          O(numTitles*(numWordsExcluded + numWordsRequired * (word.length() + log(numOccurrences) + numSectionOccurrences + 1))):
+     *              calls addOccurrencesNOT for each title which runs in
+     *              O(numWordsExcluded + numWordsRequired * (word.length() + log(numOccurrences) + numSectionOccurrences + 1))
      *
      * @param titles Array of titles of the sections to search within,
      *               the entire document is searched if titles is null or an empty array.
@@ -708,6 +930,29 @@ public class AutoTester implements Search {
         return occurrencesFound.toJavaArrayList();
     }
 
+
+    /**
+     * Adds all occurrences of the required words in the specified section to occurrencesFound iff they
+     * all occur in the specified section and none of the excluded words occur in the section
+     * @bigO
+     *      O(numWordsExcluded + numWordsRequired * (word.length() + log(numOccurrences) + numSectionOccurrences + 1)):
+     *          O(numWordsRequired): performs constant HashSet query for each required word
+     *          O(numWordsExcluded): performs constant HashSet query for each excluded word
+     *          O(numWordsRequired * (word.length() + log(numOccurrences) + numSectionOccurrences)): calls
+     *              addAllOccurrencesOfWordInSection for each required word, which runs in
+     *              O(word.length() + log(numOccurrences) + numSectionOccurrences)
+     *
+     * @param sectionNumber
+     *      The section number to add occurrences in
+     * @param wordsRequiredSections
+     *      A HashSet for each required word of the sections they occur in
+     * @param wordsRequired
+     *      The required words to possibly add their occurrences of
+     * @param wordsExcludedSections
+     *      A HashSet for each excluded word of the sections they occur in
+     * @param occurrencesFound
+     *      An ArrayList of <lineNumber, columnNumber, word> to possibly add to
+     */
     public void addOccurrencesNOT(Integer sectionNumber, ArrayList<HashSet<Integer>> wordsRequiredSections,
                                   ArrayList<HashSet<Integer>> wordsExcludedSections, String[] wordsRequired,
                                   ArrayList<Triple<Integer, Integer, String>> occurrencesFound) {
@@ -736,6 +981,16 @@ public class AutoTester implements Search {
      * and at least one of the words in the 'orWords' parameter.
      * Implements simple compound "and/or" logic when searching for the words.
      * The words do not need to be on the same lines.
+     *
+     * @bigO
+     *      O(numAllWords + numTitles * (numAllWords*(word.length() + log(numOccurrences) + numSectionOccurrences + 1) + 1)):
+     *
+     *          Breaking it down
+     *          O(numTitles + numAllWords): calls setupSectionSearch which runs
+     *              in O(numTitles + numRequiredWords) and performs constant HashSet contains query for each or word
+     *          O(numTitles * numAllWords*(word.length() + log(numOccurrences) + numSectionOccurrences + 1)):
+     *              calls addOccurrencesANDOR for each title which runs in
+     *              O(numAllWords*(word.length() + log(numOccurrences) + numSectionOccurrences + 1))
      *
      * @param titles Array of titles of the sections to search within,
      *               the entire document is searched if titles is null or an empty array.
@@ -789,6 +1044,34 @@ public class AutoTester implements Search {
         return occurrencesFound.toJavaArrayList();
     }
 
+    /**
+     * Adds all occurrences of the required words in the specified section to occurrencesFound iff they
+     * all occur in the specified section and at least one or word also occurs in the section. Adds all
+     * occurrences of the or words that occur in this section if the above condition is met
+     *
+     * @bigO
+     *      O(numAllWords*(word.length() + log(numOccurrences) + numSectionOccurrences + 1)):
+     *
+     *          Breaking it down
+     *          O(numAllWords): performs O(1) HashSet contains query for each required and or word
+     *          O(numAllWords*(word.length() + log(numOccurrences) + numSectionOccurrences)): calls
+     *              addAllOccurrencesOfWordInSection for each andWord and orWord which runs in
+     *              O(word.length() + log(numOccurrences) + numSectionOccurrences)
+     *
+     *
+     * @param sectionNumber
+     *      The section number to add occurrences in
+     * @param wordsRequiredSections
+     *      A HashSet for each required word of the sections they occur in
+     * @param wordsRequired
+     *      The required words to possibly add their occurrences of
+     * @param orWordsSections
+     *      A HashSet for each or word of the sections they occur in
+     * @param orWords
+     *      The or words to possibly add their occurrences of
+     * @param occurrencesFound
+     *      An ArrayList of <lineNumber, columnNumber, word> to possibly add to
+     */
     private void addOccurrencesANDOR(Integer sectionNumber, ArrayList<HashSet<Integer>> wordsRequiredSections,
                                      ArrayList<HashSet<Integer>> orWordsSections, String[] wordsRequired,
                                      String [] orWords, ArrayList<Triple<Integer, Integer, String>> occurrencesFound) {
@@ -815,5 +1098,26 @@ public class AutoTester implements Search {
                 addAllOccurrencesOfWordInSection(wordsRequired[i], sectionNumber, occurrencesFound);
             }
         }
+    }
+
+
+    /**
+     * Helper method to convert my ArrayList and HashPair implementations to the required java.util.ArrayList
+     * Pair classes
+     *
+     * @param list
+     *      Internal data representation
+     *
+     * @return
+     *      External data representation
+     */
+    private java.util.ArrayList<Pair<Integer, Integer>> dataTypeAdapter(ArrayList<HashPair<Integer, Integer>> list) {
+        java.util.ArrayList<Pair<Integer, Integer>> convertedList = new java.util.ArrayList<>(list.size());
+
+        for(int i = 0; i < list.size(); i++) {
+            convertedList.add(new Pair<>(list.get(i).getLeftValue(), list.get(i).getRightValue()));
+        }
+
+        return convertedList;
     }
 }

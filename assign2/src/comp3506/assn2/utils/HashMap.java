@@ -22,6 +22,9 @@ public class HashMap<K, V> {
         /**
          * Initialises an Entry: a key, value pair
          *
+         * @bigO
+         *      O(1): value assignment in constant time
+         *
          * @param key
          *      The key of this entry
          * @param value
@@ -35,6 +38,9 @@ public class HashMap<K, V> {
         /**
          * Returns the key of this Entry
          *
+         * @bigO
+         *      O(1): returning reference in constant time
+         *
          * @return
          *      The key of this Entry
          */
@@ -45,6 +51,9 @@ public class HashMap<K, V> {
         /**
          * Returns the value of this Entry
          *
+         * @bigO
+         *      O(1): returning reference in constant time
+         *
          * @return
          *      The value of this Entry
          */
@@ -54,6 +63,9 @@ public class HashMap<K, V> {
 
         /**
          * Sets the Entry's value
+         *
+         * @bigO
+         *      O(1): value assignment in constant time
          *
          * @param newValue
          *      The new value for the entry
@@ -75,6 +87,9 @@ public class HashMap<K, V> {
     /**
      * Initialises a HashMap with a specified initial size
      *
+     * @bigO
+     *      O(1): value assignment occurs in constant time
+     *
      * @param initialSize
      *      The initial size of the HashMap's array
      */
@@ -86,6 +101,9 @@ public class HashMap<K, V> {
 
     /**
      * Initialises a HashMap with default initial size
+     *
+     * @bigO
+     *      O(1): calls O(1) constructor
      */
     public HashMap() {
         this(DEFAULT_INITIAL_SIZE);
@@ -94,6 +112,10 @@ public class HashMap<K, V> {
     /**
      * Returns the index of the key if found, else returns -i-1 where i
      * is the index of an available slot
+     *
+     * @bigO
+     *      O(1) average case: calculate hashcode and index into array in constant time
+     *      O(n) worst case: calculate hashcode, index into array, iterate through array to find element
      *
      * @param key
      *      The key to find the index of
@@ -130,6 +152,9 @@ public class HashMap<K, V> {
     /**
      * Doubles the capacity of the HashMap, and rehashes all elements
      * into the new HashMap
+     *
+     * @bigO
+     *      O(N): must rehash all N elements
      */
     private void rehashTable() {
         this.size *= RESIZE_FACTOR;
@@ -147,6 +172,9 @@ public class HashMap<K, V> {
     /**
      * Returns the number of elements in the HashMap
      *
+     * @bigO
+     *      O(1): return numEntries reference in constant time
+     *
      * @return
      *      The number of elements in the HashMap
      */
@@ -157,6 +185,9 @@ public class HashMap<K, V> {
     /**
      * Returns the value associated with the specified key. Returns null if
      * the key is not found
+     *
+     * @bigO
+     *      O(1) average case, O(N) worst case, calls findKeyEntry and performs constant time access
      *
      * @param key
      *      The key to search for
@@ -176,6 +207,9 @@ public class HashMap<K, V> {
     /**
      * Adds the key, value pair to the HashMap. If the key already exists
      * in the HashMap, the associated value is updated
+     *
+     * @bigO
+     *      O(1) average case, O(N) worst case, calls findKeyEntry and performs constant time access
      *
      * @param key
      *      The key to add to the HashMap
@@ -200,6 +234,9 @@ public class HashMap<K, V> {
     /**
      * Removes the key, value paired associated with the specified key
      *
+     * @bigO
+     *      O(1) average case, O(N) worst case, calls findKeyEntry and performs constant time access
+     *
      * @param key
      *      The key to remove
      */
@@ -214,6 +251,7 @@ public class HashMap<K, V> {
 
     /**
      * Returns a String representation of the HashMap
+     *
      *
      * @return
      *      A String representation of the HashMap
