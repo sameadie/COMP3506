@@ -119,7 +119,7 @@ public class AutoTester implements Search {
 
         //Store all lines in HashMap
         while((line = documentReader.readLine()) != null) {
-            this.textLines.put(lineNumber++, line);
+            this.textLines.put(lineNumber++, line.toLowerCase());
         }
     }
 
@@ -180,6 +180,7 @@ public class AutoTester implements Search {
         }
     }
 
+
     /**
      * Forms an OccurrenceTrie storing occurrences of all words in the document with
      * specified filename
@@ -219,15 +220,23 @@ public class AutoTester implements Search {
         //Read file until end
         while((line = documentReader.readLine()) != null) {
             line = line.toLowerCase();
-            reference = documentTrie.getRoot(); //Start adding next word from root
+            reference = documentTrie.getRoot(); //Start adding word from root
             occurrence = new HashPair<>(lineNumber, 1); //First word occurs at start of line
 
             for(int i = 0; i < line.length(); i++) {
-                //Ignore punctation that isn't apostrophes
+                //Non-alphanumerical characters that arent apostrophes also mark the end of words - add word to trie
                 if(!(Character.isLetterOrDigit(line.charAt(i)) || line.charAt(i) == '\'' || line.charAt(i) == ' ')) {
+                    //Check we've traversed a non-empty word
+                    if(!reference.equals(documentTrie.getRoot())) {
+                        reference.addOccurrence(occurrence, sectionNumber);
+                    }
+
+                    //Set occurrence position for next word
+                    occurrence = new HashPair<>(lineNumber, i + 2); //Column number = i + 1: next word starts at i + 2
+                    reference = documentTrie.getRoot();
                     continue;
 
-                    //Handle space characters - end of words
+                    //Handle space characters - end of word, add to trie
                 } else if(line.charAt(i) == ' ') {
                     //Check we've traversed a non-empty word
                     if(!reference.equals(documentTrie.getRoot())) {
@@ -241,14 +250,15 @@ public class AutoTester implements Search {
 
                     //Handle apostrophe
                 } else if (line.charAt(i) == '\'') {
-                    //Ignore apostrophes on ends of word
-                    if (i + 1 == line.length() || (line.charAt(i + 1) == ' ')){
-                        continue;
-                    }
-
                     //Move start of word up one if apostrophe at start of word
                     if(i == 0 || (line.charAt(i - 1) == ' ')) {
                         occurrence.setRightValue(occurrence.getRightValue() + 1);
+                        continue;
+                    }
+
+                    //Ignore apostrophes on ends of word
+                    if (i + 1 == line.length() || (line.charAt(i + 1) == ' ')){
+                        continue;
                     }
                 }
 
@@ -325,6 +335,8 @@ public class AutoTester implements Search {
             }
         }
 
+        String word = phrase.split(" ")[0];
+
         //Find occurrences of first word
         ArrayList<HashPair<Integer, Integer>> occurrences = this.documentTrie.getOccurrences(phrase.split(" ")[0]);
 
@@ -351,7 +363,7 @@ public class AutoTester implements Search {
      *      and character comparisons are O(1)
      *
      * @param occurrence
-     *      <lineNumber, columnNumbebr> to start searching document from
+     *      <lineNumber, columnNumber> to start searching document from
      * @param phrase
      *      the phrase to search for
      *
@@ -364,35 +376,46 @@ public class AutoTester implements Search {
         int stringIndex = 0;
         char c;
 
-        while(stringIndex < phrase.length()) {
-            //Go to next line
-            if(columnNumber >= this.textLines.get(lineNumber).length()) {
+        while (stringIndex < phrase.length()) {
+            //Skip blank lines
+            if(this.textLines.get(lineNumber - 1).length() == 0) {
                 lineNumber++;
-                columnNumber = 1;
+                continue;
             }
 
-            c = this.textLines.get(lineNumber).charAt(columnNumber - 1);
+            //Go to next line
+            if (columnNumber > this.textLines.get(lineNumber - 1).length()) {
+                //New line should correspond to space in search phrase
+                if(phrase.charAt(stringIndex) != ' ') {
+                    return false;
+                }
+                stringIndex++;
+                lineNumber++;
+                columnNumber = 1;
+                continue;
+            }
+
+            c = this.textLines.get(lineNumber - 1).charAt(columnNumber - 1);
 
             //Valid char for comparison
-            if(((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || (c == ' ')) {
-                if(c != phrase.charAt(stringIndex++)) {
+            if (((c >= 'a') && (c <= 'z')) || ((c >= 'A') && (c <= 'Z')) || (c == ' ')) {
+                if (c != phrase.charAt(stringIndex++)) {
                     return false;
                 }
                 //Handle apostrophe
-            } else if(c == '\'') {
-                if((columnNumber + 1 >= this.textLines.get(lineNumber).length()) || (columnNumber == 1)
-                        || (this.textLines.get(lineNumber).charAt(columnNumber - 1 - 1) == ' ')
-                        || (this.textLines.get(lineNumber).charAt(columnNumber - 1 + 1) == ' ')) {
+            } else if (c == '\'') {
+                if ((columnNumber + 1 > this.textLines.get(lineNumber - 1).length()) || (columnNumber == 1)
+                        || (this.textLines.get(lineNumber - 1).charAt(columnNumber - 1 - 1) == ' ')
+                        || (this.textLines.get(lineNumber - 1).charAt(columnNumber - 1 + 1) == ' ')) {
                     //Apostrophe at start/end of word
                 } else {
-                    if(c != phrase.charAt(stringIndex++)) {
+                    if (c != phrase.charAt(stringIndex++)) {
                         return false;
                     }
                 }
             }
             columnNumber++;
         }
-
         return true;
     }
 
