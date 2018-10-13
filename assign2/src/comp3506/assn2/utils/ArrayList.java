@@ -6,6 +6,10 @@ import java.util.Comparator;
 /**
  * A generic ArrayList implementation
  *
+ * @bigO
+ *      O(n) memory efficiency: each element stored once with a few
+ *      constant values to keep track of number of elements and size
+ *
  * @param <E>
  *     The type of the elements stored in the ArrayList
  */
@@ -37,7 +41,7 @@ public class ArrayList <E> {
      * Initialises an ArrayList with default initial capacity
      *
      * @bigO
-     *      O(1): runs O(1) time function
+     *      O(1): calls constructor which runs in O(1)
      */
     public ArrayList() {
         this(DEFAULT_START_SIZE);
@@ -47,7 +51,7 @@ public class ArrayList <E> {
      * Returns the number of elements in the array
      *
      * @bigO
-     *      O(1)
+     *      O(1): calls O(1) function
      * @return
      *      The number of elements in the array
      */
@@ -126,7 +130,7 @@ public class ArrayList <E> {
      * the element is appended to the list
      *
      * @bigO
-     *      O(N): must shift elements to make room for insertion
+     *      O(N): must shift N elements to make room for insertion
      *  
      * @param index
      *      The index to insert the element at
@@ -245,10 +249,7 @@ public class ArrayList <E> {
 
     /**
      * Increases the capacity of the list by the specified factor
-     * 
-     * @bigO
-     *      O(N): copies 
-     * 
+     *
      * @param factor
      *      The specified increase in capacity
      */
@@ -263,7 +264,7 @@ public class ArrayList <E> {
      * Returns a java.util.ArrayList containing the elements in this list.
      *
      * @bigO
-     *      O(N): adds all N elements to java.util.ArrayList
+     *      O(N): adds all N elements to a java.util.ArrayList
      *
      * @return
      *      A java.util.ArrayList containing all elements in this list

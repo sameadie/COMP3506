@@ -3,6 +3,9 @@ package comp3506.assn2.utils;
 /**
  * A Pair subclass that implements equals and hashCode
  *
+ * @bigO
+ *      O(L + R) space complexity: size proportional to size of left and right values
+ *
  * @param <L>
  *          The type of the left element
  * @param <R>

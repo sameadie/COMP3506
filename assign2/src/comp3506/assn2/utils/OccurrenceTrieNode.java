@@ -2,9 +2,11 @@ package comp3506.assn2.utils;
 
 /**
  * A trie node for storing occurrences of words in text
- * 
- * @author Sam Eadie <s.eadie@uq.edu.au>
  *
+ * @bigO
+ *      O(numOccurrences + numSections) space complexity: O(numOccurrences + numSections + numChildren), however
+ *          numChildren is limited to 27 hence O(numOccurrences + numSections)
+ * @author Sam Eadie <s.eadie@uq.edu.au>
  */
 public class OccurrenceTrieNode {
     protected final static int INITIAL_CHILDREN_SPACE = 4;

@@ -3,7 +3,10 @@ package comp3506.assn2.utils;
 
 /**
  * A trie structure for OccurrenceTrieNodes 
- * 
+ *
+ * @bigO
+ *      O(N) space complexity: space proportionate to number of nodes
+ *
  * @author Sam Eadie <s.eadie@uq.edu.au>
  *
  */
@@ -61,7 +64,7 @@ public class OccurrenceTrie {
      * @bigO
      *      O(numChildren * word.length()): traverses down trie at most word.length() number
      *      of times. Getting children runs in O(numChildren) each time, O(numChildren) is essentially
-     *      constant O(27) but can be improved. Essentially O(word.length())
+     *      constant O(27) but can be improved using HashMap. Essentially O(word.length())
      *
      *
      * @param word
@@ -80,6 +83,7 @@ public class OccurrenceTrie {
             return new HashPair<>(this.root, 0);
         }
 
+        //Traverse down trie
         do {
             reference = next;
             next = reference.getChild(word.charAt(stringIndex++));
@@ -102,7 +106,6 @@ public class OccurrenceTrie {
      *
      * @param word
      *      The word to traverse the tree for
-     *
      * @return
      *      The node that terminates the specified word in the trie, else null
      */
@@ -113,6 +116,7 @@ public class OccurrenceTrie {
         if(longestPrefix.getRightValue() == word.length()) {
             return longestPrefix.getLeftValue();
         }
+
         return null;
     }
 
@@ -181,15 +185,16 @@ public class OccurrenceTrie {
      * Returns all occurrences of the given prefix
      *
      * @bigO
-     *      O((numOccurrencesPerNode + 1)x (27 ^ heightRoot)):
+     *      O((numOccurrencesPerNode)x (27 ^ heightRoot)):
      *
-     *      O(numChildrenInSubtree*(numOccurrences + 1)) because .extend() is called on every child in
-     *      subtree and this calls .append() numOccurrences times and runs in O(1). Nodes are visited in
-     *      constant time and numChildrenInSubtree nodes are visited hence the +1 in the brackets
+     *          Breaking it down
+     *          O(numChildrenInSubtree*(numOccurrences + 1)) because .extend() is called on every child in
+     *          subtree and this calls .append() numOccurrences times and runs in O(1). Nodes are visited in
+     *          constant time and numChildrenInSubtree nodes are visited hence the +1 in the brackets
      *
-     *      numChildrenInSubtree = childrenPerParent ^ longestSuffix = 27 ^ heightRoot
+     *          numChildrenInSubtree = childrenPerParent ^ longestSuffix = 27 ^ heightRoot
      *
-     *      Combining these give: O((numOccurrencesPerNode + 1)x (27 ^ heightRoot))
+     *          Combining these give: O((numOccurrencesPerNode)x (27 ^ heightRoot))
      *
      * @param prefix
      *      The prefix to query for occurrences

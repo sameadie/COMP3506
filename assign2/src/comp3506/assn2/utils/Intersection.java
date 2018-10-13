@@ -3,14 +3,14 @@ package comp3506.assn2.utils;
 /**
  * Static helper methods for finding logical operations on multiple arrays, specifically, the intersection (AND),
  * union (OR) and not (NOT) of n ArrayLists can be computed
+ *
+ * @bigO
+ *      O(1) space complexity: class contains static methods
  */
 public class Intersection {
 
     /**
      * Helper method to determine if all pointers point to the end of their respective arrays
-     *
-     * @bigO
-     *      O(numPointers): checks all pointers for completion
      *
      * @param occurrences
      *      The arrays being traversed
@@ -21,6 +21,7 @@ public class Intersection {
      */
     private static boolean allPointersFinished(ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences, ArrayList<Integer> pointers) {
         for(int i = 0; i < occurrences.size(); i++) {
+            //A pointer isn't finished
             if(pointers.get(i) + 1 != occurrences.get(i).size()) {
                 return false;
             }
@@ -35,7 +36,8 @@ public class Intersection {
      * Simultaneously traverses all arrays in ascending order incrementing minimum value, checking for intersections
      *
      * @bigO
-     *      O(sum(N)): runs in time linear to sum of all elements, since arrays are sorted each array is traversed only once
+     *      O(sum(numElements) * numLists): Compares numLists elements and increments one pointer every loop. Needs
+     *          to increment all pointers to their end, so it loops sum(numElements) times
      *
      * @param occurrences
      *      An ArrayList of ArrayLists of lineNumber, columnNumber pairs to calculate the intersection of
@@ -45,13 +47,9 @@ public class Intersection {
      */
     public static ArrayList<Integer> getIntersections(ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences) {
 
-        System.out.println("Find intersection of: ");
-        for(int i = 0; i < occurrences.size(); i++) {
-            System.out.println(occurrences.get(i).toJavaArrayList().toString());
-        }
-
         ArrayList<Integer> intersections = new ArrayList<>();
 
+        //Intersection of one list is itself - extract line numbers from <lineNumber, columnNumber> pairs
         if(occurrences.size() == 1) {
             for(int i = 0; i < occurrences.get(0).size(); i++) {
                 intersections.append(occurrences.get(0).get(i).getLeftValue());
@@ -132,10 +130,8 @@ public class Intersection {
         //Check last elements aren't an intersection
         Integer lastValue = occurrences.get(0).get(occurrences.get(0).size() - 1).getLeftValue();
 
-        //Check last value already added
+        //Check last value for duplicates
         if((intersections.size() != 0 ) && (intersections.get(intersections.size() - 1).equals(lastValue))) {
-            System.out.println("this gives");
-            System.out.println(intersections.toJavaArrayList().toString());
             return intersections;
         }
 
@@ -146,8 +142,6 @@ public class Intersection {
             }
         }
 
-        System.out.println("this gives");
-        System.out.println(intersections.toJavaArrayList().toString());
         //Last value is an intersection
         intersections.append(lastValue);
         return intersections;
@@ -160,7 +154,8 @@ public class Intersection {
      * Simultaneously traverses all arrays in ascending order incrementing minimum value, checking for unions
      *
      * @bigO
-     *      O(sum(N)): runs in time linear to sum of all elements, since arrays are sorted each array is traversed only once
+     *      O(sum(numElements) * numLists): Compares numLists elements and increments one pointer every loop. Needs
+     *          to increment all pointers to their end, so it loops sum(numElements) times
      *
      * @param occurrences
      *      An ArrayList of ArrayLists of lineNumber, columnNumber pairs to calculate the union of
@@ -174,6 +169,7 @@ public class Intersection {
         //Initialise a pointer to start of every array
         ArrayList<Integer> pointers = new ArrayList<>(occurrences.size());
         for(int i = 0; i < occurrences.size(); i++) {
+
             //Remove empty lists
             if(occurrences.get(i).size() == 0) {
                 occurrences.remove(i);
@@ -184,11 +180,12 @@ public class Intersection {
             pointers.append(0);
         }
 
+        //Union of no lists is empty list
         if (occurrences.size() == 0) {
             return new ArrayList<>(0);
         }
 
-        //Traverse all lists, finding intersections
+        //Traverse all lists, finding unions
         do {
             int minimumIndex = 0;
             int minimumValue = occurrences.get(0).get(pointers.get(0)).getLeftValue();
@@ -233,7 +230,7 @@ public class Intersection {
                 pointers.set(minimumIndex, pointers.get(minimumIndex) + 1);
             }
 
-        } while(occurrences.size() != 0); //!allPointersFinished(occurrences, pointers));
+        } while(occurrences.size() != 0);
 
         return unions;
     }
@@ -245,7 +242,8 @@ public class Intersection {
      * Traverses occurrences while simultaneously traversing all arrays in notOccurrences, removing common values
      *
      * @bigO
-     *      O(sum(N)): runs in time linear to sum of all elements, since arrays are sorted each array is traversed only once
+     *      O(numOccurrences * notOccurrences.length + sum(numNotOccurrences)): notOccurrences.length comparisons
+     *      are made for each loop in numOccurrences and each element in the lists in notOccurrences have to be visited
      *
      * @param occurrences
      * @param notOccurrences
@@ -253,15 +251,9 @@ public class Intersection {
      */
     public static ArrayList<Integer> getNot(ArrayList<Integer> occurrences, ArrayList<ArrayList<HashPair<Integer, Integer>>> notOccurrences) {
 
-        System.out.println("From these:");
-        System.out.println(occurrences.toJavaArrayList().toString());
+        ArrayList<Integer> exclusiveOccurrences = new ArrayList<>();
 
-        System.out.println("Remove these: ");
-        for(int i = 0; i < notOccurrences.size(); i++) {
-            System.out.println(notOccurrences.get(i).toJavaArrayList().toString());
-        }
-        System.out.println("This gives: ");
-
+        //Initialise pointers to start of notOccurrences lists
         int includedPointer = 0;
         ArrayList<Integer> notPointers = new ArrayList<>(notOccurrences.size());
         for (int i = 0; i < notOccurrences.size(); i++) {
@@ -269,32 +261,32 @@ public class Intersection {
         }
 
 
+        //Iterate through occurrences
         while (includedPointer < occurrences.size()) {
             boolean allGreater = true;
+            boolean nonEqual = true;
             for (int i = 0; i < notPointers.size(); i++) {
-                if (notOccurrences.get(i).get(notPointers.get(i)).getLeftValue() < occurrences.get(includedPointer)) {
-                    if(notPointers.get(i) + 1 < notOccurrences.get(i).size()) {
+                if (notPointers.get(i) < notOccurrences.get(i).size()) {
+                    if (notOccurrences.get(i).get(notPointers.get(i)).getLeftValue() < occurrences.get(includedPointer)) {
                         notPointers.set(i, notPointers.get(i) + 1);
-                    } else {
-                        notPointers.remove(i);
-                        notOccurrences.remove(i);
+                        allGreater = false;
+
+                        //Found match between occurrences and notOccurrences - remove
+                    } else if (notOccurrences.get(i).get(notPointers.get(i)).getLeftValue().equals(occurrences.get(includedPointer))) {
+                        nonEqual = false;
+                        break;
                     }
-                    allGreater = false;
-                } else if (notOccurrences.get(i).get(notPointers.get(i)).getLeftValue().equals(occurrences.get(includedPointer))) {
-                    occurrences.remove(includedPointer);
-                    allGreater = false;
-                    break;
                 }
             }
-
+            //Increment occurrences
             if (allGreater) {
+                if(nonEqual) {
+                    exclusiveOccurrences.append(occurrences.get(includedPointer));
+                }
                 includedPointer++;
             }
         }
 
-        System.out.println(occurrences.toJavaArrayList().toString());
-        System.out.println("END");
-
-        return occurrences;
+        return exclusiveOccurrences;
     }
 }

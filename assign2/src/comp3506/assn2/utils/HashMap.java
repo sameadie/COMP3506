@@ -5,6 +5,10 @@ import static java.lang.Math.abs;
 /**
  * A generic HashMap implementation utilising linear-probing
  *
+ * @bigO
+ *      O(N) space complexity: memory usage linearly proportional to
+ *      number of elements
+ *
  * @param <K>
  *     The type of keys in the HashMap
  * @param <V>
@@ -14,6 +18,10 @@ public class HashMap<K, V> {
 
     /**
      * A generic entry in the HashMap
+     *
+     * @bigO
+     *      O(K + V) space complexity: proportional to size of
+     *      key and value
      */
     public class Entry<K, V> {
         private K key;
@@ -152,15 +160,14 @@ public class HashMap<K, V> {
     /**
      * Doubles the capacity of the HashMap, and rehashes all elements
      * into the new HashMap
-     *
-     * @bigO
-     *      O(N): must rehash all N elements
      */
     private void rehashTable() {
+        //Increase table capacity
         this.size *= RESIZE_FACTOR;
         Entry[] oldEntries = this.entries;
         this.entries = new Entry[this.size];
 
+        //Rehash elements into new table
         for(int i = 0; i < oldEntries.length; i++) {
             if((oldEntries[i] != null) && (oldEntries[i] != AVAILABLE_POSITION)) {
                 int newIndex = findKeyEntry((K) oldEntries[i].getKey());
@@ -173,7 +180,7 @@ public class HashMap<K, V> {
      * Returns the number of elements in the HashMap
      *
      * @bigO
-     *      O(1): return numEntries reference in constant time
+     *      O(1): return reference to numEntries in constant time
      *
      * @return
      *      The number of elements in the HashMap
@@ -251,7 +258,6 @@ public class HashMap<K, V> {
 
     /**
      * Returns a String representation of the HashMap
-     *
      *
      * @return
      *      A String representation of the HashMap

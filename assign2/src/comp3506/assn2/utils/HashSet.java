@@ -3,6 +3,9 @@ package comp3506.assn2.utils;
 /**
  * A set implementation backed by a HashMap
  *
+ * @bigO
+ *      O(N) space complexity: contains HashMap with O(N) space complexity
+ *
  * @param <E>
  *      The type of elements stored in the set
  */
@@ -37,7 +40,6 @@ public class HashSet<E> {
 
     /**
      * Returns the number of elements in the set
-     *
      *
      * @bigO
      *      O(1): calls constant time function

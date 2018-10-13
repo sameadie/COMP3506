@@ -16,8 +16,16 @@ import java.util.List;
  * You must implement the constructor stub below and override the methods from the Search interface
  * so that they call the necessary code in your application.
  *
- * @author Sam Eadie
+ * @bigO
+ *      O(numSections + numStopWords + numLines) space complexity:
+ *          documentTrie : O(27^longestWord)
+ *          sectionIndexes : O(numSections)
+ *          sectionStarts : O(numSections)
+ *          stopWords : O(numStopWords)
+ *          textLines : O(lenText) but stored on disc with references in main memory
  *
+ *
+ * @author Sam Eadie
  */
 public class AutoTester implements Search {
 
@@ -94,12 +102,6 @@ public class AutoTester implements Search {
     /**
      * Reads the file's lines into a HashMap
      *
-     * @bigO
-     *      O(numChars + numLines): iterates through every character in the document
-     *      and performs constant time comparison against \n to split into lines and
-     *      adds line to HashMap (constant time add) for each numLines. This would
-     *      actually be stored on list with reference to lines stored in main memory
-     *
      * @param filename
      *      the document's filename
      *
@@ -125,11 +127,6 @@ public class AutoTester implements Search {
      * Reads in the section names and start lines into a
      * HashMap<sectionName, Pair<sectionNumber, sectionStartLineNumber>> and an
      * ArrayList<sectionLineNumber>
-     *
-     * @bigO
-     *      O(numChars + numLines): iterates through every character in the document
-     *      and performs constant time comparison against \n to split into lines and
-     *      adds line to HashMap and ArrayList (constant time add) for each numLines.
      *
      * @param indexFileName
      *      The filename of the document to read sections from
@@ -164,11 +161,6 @@ public class AutoTester implements Search {
 
     /**
      * Reads all words from stopWordsFilename into a HashSet
-     *
-     * @bigO
-     *      O(numChars + numLines): iterates through every character in the document
-     *      and performs constant time comparison against \n to split into lines and
-     *      adds line to HashSet (constant time add) for each numLines.
      *
      * @param stopWordsFileName
      *      The filename of the document storing stop words for this search application
@@ -439,10 +431,13 @@ public class AutoTester implements Search {
      * The words do not need to be contiguous on the line.
      *
      * @bigO:
-     *      O(numWords * (wordLength + 1) + sum(occurrences)):
+     *      O(numWords * (wordLength + 1) + sum(numWordsOccurrences) * numWords):
+     *
+     *          Breaking it down
      *          O(numWords * (wordLength) + 1): getOccurrences runs in O(wordLength),
      *              ArrayList.append and HashSet.contains run in O(1), and this occurs numWords times
-     *          O(sum(occurrences)): finding intersection calls O(sum(occurrences)) function
+     *          O(sum(numWordsOccurrences) * numWords): finding intersection calls
+     *              O(sum(numWordsOccurrences) * numWords) function
      *
      * @param words Array of words to find on a single line in the document.
      * @return List of line numbers on which all the words appear in the document.
@@ -477,10 +472,11 @@ public class AutoTester implements Search {
      * Implements simple "or" logic when searching for the words.
      * The words do not need to be contiguous on the line.
      * @bigO:
-     *      O(numWords * (wordLength + 1) + sum(occurrences)):
+     *      O(numWords * (wordLength + 1) + O(sum(wordOccurrences.length) * words.length)):
      *          O(numWords * (wordLength) + 1): getOccurrences runs in O(wordLength),
      *              ArrayList.append and HashSet.contains run in O(1), and this occurs numWords times
-     *          O(sum(occurrences)): finding union calls O(sum(occurrences)) function
+     *          O(sum(wordOccurrences.length) * words.length): finding union calls
+     *              O(sum(numElements) * numLists) function
      *
      * @param words Array of words to find on a single line in the document.
      * @return List of line numbers on which any of the words appear in the document.
@@ -494,7 +490,7 @@ public class AutoTester implements Search {
         }
 
         ArrayList<ArrayList<HashPair<Integer, Integer>>> occurrences = new ArrayList<>(words.length);
-
+        ArrayList<HashPair<Integer, Integer>> wordOccurences;
         //Get occurrences for every word
         for(int i = 0; i < words.length; i++) {
             if((words[i] == null) || (words[i].length() == 0)) {
@@ -502,7 +498,10 @@ public class AutoTester implements Search {
             }
 
             if(!stopWords.contains(words[i])) {
-                occurrences.append(documentTrie.getOccurrences(words[i].toLowerCase()));
+                wordOccurences = documentTrie.getOccurrences(words[i].toLowerCase());
+                if(wordOccurences.size() != 0) {
+                    occurrences.append(wordOccurences);
+                }
             }
         }
 
@@ -517,12 +516,16 @@ public class AutoTester implements Search {
      * The words do not need to be contiguous on the line.
      *
      * @bigO:
-     *      O(numWords * (wordLength + 1) + sum(occurrences)):
+     *      O(numWords * (wordLength + 1) + sum(numWordsRequiredOccurrences) * numWordsRequired +
+     *                          O(numRequiredOccurrences * wordsExcluded.length + sum(numExcludedOccurrences))):
      *
      *          Breaking it down
      *          O(numWords * (wordLength) + 1): getOccurrences runs in O(wordLength),
      *              ArrayList.append and HashSet.contains run in O(1), and this occurs numWords times
-     *          O(sum(occurrences)): finding NOT calls O(sum(occurrences)) function
+     *          O(sum(numWordsRequiredOccurrences) * numWordsRequired): finding intersection
+     *                  calls O(sum(numElements) * numLists) function
+     *           O(numRequiredOccurrences * wordsExcluded.length + sum(numExcludedOccurrences)): finding NOT calls
+     *              O(numOccurrences * notOccurrences.length + sum(numNotOccurrences)) function
      *
      * @param wordsRequired Array of words to find on a single line in the document.
      * @param wordsExcluded Array of words that must not be on the same line as 'wordsRequired'.
